@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c12;
+    --surface: #0e1420;
+    --surface2: #151d2e;
+    --border: #1e2d45;
+    --border2: #243550;
+    --text: #e8edf5;
+    --muted: #6b7d96;
+    --dim: #3a4d66;
+    --cyan: #00d4ff;
+    --cyan-dim: rgba(0,212,255,0.08);
+    --cyan-mid: rgba(0,212,255,0.15);
+    --green: #00e676;
+    --green-dim: rgba(0,230,118,0.08);
+    --red: #ff4b6e;
+    --red-dim: rgba(255,75,110,0.08);
+    --amber: #ffb830;
+    --amber-dim: rgba(255,184,48,0.08);
+    --purple: #9d6eff;
+    --purple-dim: rgba(157,110,255,0.08);
+    --on-track: #00e676;
+    --accelerating: #00d4ff;
+    --diverging: #ffb830;
+    --broken: #ff4b6e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .header-left h1 span { color: var(--cyan); }
+
+  .header-left p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+  /* Buttons */
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--bg);
+  }
+  .btn-primary:hover { background: #33ddff; transform: translateY(-1px); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+  }
+  .btn-outline:hover { background: var(--cyan-dim); }
+
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+  .btn-danger:hover { background: var(--red-dim); }
+
+  .btn-sm { padding: 6px 14px; font-size: 0.7rem; }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .summary-card.user::before { background: var(--cyan); }
+  .summary-card.ai::before { background: var(--purple); }
+  .summary-card.combined::before { background: var(--green); }
+
+  .summary-card:hover { border-color: var(--border2); }
+
+  .summary-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-label .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .summary-card.user .dot { background: var(--cyan); }
+  .summary-card.ai .dot { background: var(--purple); }
+  .summary-card.combined .dot { background: var(--green); }
+
+  .summary-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .summary-gain {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .summary-gain.pos { color: var(--green); }
+  .summary-gain.neg { color: var(--red); }
+  .summary-gain.neutral { color: var(--muted); }
+
+  .summary-cost {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+
+  /* Last updated */
+  .last-updated {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    text-align: right;
+    margin-bottom: 32px;
+    margin-top: -24px;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .badge-user { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+  .badge-ai { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(157,110,255,0.2); }
+
+  /* Positions section */
+  .positions-section { margin-bottom: 48px; }
+
+  /* Position cards grid */
+  .positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 16px;
+  }
+
+  .position-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .position-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-symbol {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--cyan);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .card-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .card-price-block { text-align: right; }
+
+  .card-current-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .card-gain {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .card-gain.pos { color: var(--green); }
+  .card-gain.neg { color: var(--red); }
+  .card-gain.neutral { color: var(--muted); }
+
+  /* Card metrics row */
+  .card-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .metric-cell {
+    background: var(--surface);
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .metric-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Card body */
+  .card-body { padding: 16px 20px; }
+
+  .thesis-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .thesis-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  /* Analysis block */
+  .analysis-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .analysis-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--dim);
+  }
+
+  .thesis-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .status-on-track { background: rgba(0,230,118,0.1); color: var(--on-track); border: 1px solid rgba(0,230,118,0.2); }
+  .status-accelerating { background: rgba(0,212,255,0.1); color: var(--accelerating); border: 1px solid rgba(0,212,255,0.2); }
+  .status-diverging { background: rgba(255,184,48,0.1); color: var(--diverging); border: 1px solid rgba(255,184,48,0.2); }
+  .status-broken { background: rgba(255,75,110,0.1); color: var(--broken); border: 1px solid rgba(255,75,110,0.2); }
+
+  .analysis-comparison {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .recommendation-block {
+    background: var(--bg);
+    border-left: 2px solid var(--cyan);
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 10px;
+  }
+
+  .recommendation-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    margin-bottom: 4px;
+  }
+
+  .recommendation-text {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .signal-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .signal-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .signal-buy { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .signal-sell { background: rgba(255,75,110,0.15); color: var(--red); border: 1px solid rgba(255,75,110,0.3); }
+  .signal-hold { background: rgba(107,125,150,0.15); color: var(--muted); border: 1px solid rgba(107,125,150,0.3); }
+
+  /* Notes section */
+  .notes-section { margin-top: 14px; }
+
+  .note-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .note-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+
+  .add-note-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .add-note-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+  }
+
+  .add-note-row input:focus { outline: none; border-color: var(--cyan); }
+  .add-note-row input::placeholder { color: var(--dim); }
+
+  /* Card footer */
+  .card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .risk-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .risk-low { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.15); }
+  .risk-medium { background: rgba(255,184,48,0.1); color: var(--amber); border: 1px solid rgba(255,184,48,0.15); }
+  .risk-high { background: rgba(255,75,110,0.1); color: var(--red); border: 1px solid rgba(255,75,110,0.15); }
+
+  .target-info {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--dim);
+  }
+
+  .target-info span { color: var(--purple); font-weight: 700; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8,12,18,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 32px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-group label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--cyan);
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: var(--dim); }
+
+  .form-group select option { background: var(--surface2); }
+
+  .form-group textarea { min-height: 90px; resize: vertical; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 14px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text);
+    z-index: 2000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    max-width: 360px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  .toast.info { border-left: 3px solid var(--cyan); }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty state */
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+    border-radius: 8px;
+    padding: 48px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.9rem;
+  }
+
+  .empty-state p { margin-bottom: 20px; }
+
+  /* No analysis state */
+  .no-analysis {
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    color: var(--dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    margin-bottom: 14px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+  @media (max-width: 768px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .positions-grid { grid-template-columns: 1fr; }
+    .header { flex-direction: column; gap: 20px; }
+    .header-actions { justify-content: flex-start; }
+    .header-left h1 { font-size: 2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .card-metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>STOCK <span>ANALYZER</span></h1>
+      <p id="headerDate">LOADING...</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openAddModal('user')">+ MY PICK</button>
+      <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI PICK</button>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="runDailyAnalysis()">⟳ RUN ANALYSIS</button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card user">
+      <div class="summary-label"><span class="dot"></span>Your Positions</div>
+      <div class="summary-value" id="userValue">—</div>
+      <div class="summary-gain neutral" id="userGain">—</div>
+      <div class="summary-cost" id="userCost">—</div>
+    </div>
+    <div class="summary-card ai">
+      <div class="summary-label"><span class="dot"></span>AI Suggested</div>
+      <div class="summary-value" id="aiValue">—</div>
+      <div class="summary-gain neutral" id="aiGain">—</div>
+      <div class="summary-cost" id="aiCost">—</div>
+    </div>
+    <div class="summary-card combined">
+      <div class="summary-label"><span class="dot"></span>Combined Portfolio</div>
+      <div class="summary-value" id="combinedValue">—</div>
+      <div class="summary-gain neutral" id="combinedGain">—</div>
+      <div class="summary-cost" id="combinedCost">—</div>
+    </div>
+  </div>
+
+  <div class="last-updated" id="lastUpdated">Not yet updated today — click Run Analysis</div>
+
+  <!-- Your Positions -->
+  <div class="positions-section">
+    <div class="section-header">
+      <div class="section-title">
+        YOUR POSITIONS
+        <span class="section-badge badge-user" id="userCount">0</span>
+      </div>
+    </div>
+    <div class="positions-grid" id="userPositions">
+      <div class="empty-state">
+        <p>No positions yet.</p>
+        <button class="btn btn-outline btn-sm" onclick="openAddModal('user')">+ Add Your First Pick</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Suggested Positions -->
+  <div class="positions-section">
+    <div class="section-header">
+      <div class="section-title">
+        AI SUGGESTED
+        <span class="section-badge badge-ai" id="aiCount">0</span>
+      </div>
+    </div>
+    <div class="positions-grid" id="aiPositions">
+      <div class="empty-state">
+        <p>No AI suggestions yet.</p>
+        <button class="btn btn-outline btn-sm" onclick="openAddModal('ai-suggested')">+ Add AI Suggestion</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Position Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add Position</h2>
+    <input type="hidden" id="modalType" value="user">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Symbol</label>
+        <input type="text" id="fSymbol" placeholder="e.g. MRVL" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="form-group">
+        <label>Shares</label>
+        <input type="number" id="fShares" placeholder="0" min="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Entry Price ($)</label>
+        <input type="number" id="fEntry" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Target Price ($)</label>
+        <input type="number" id="fTarget" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Risk Level</label>
+      <select id="fRisk">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Investment Thesis</label>
+      <textarea id="fThesis" placeholder="Why are you buying this? What's the growth thesis?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="savePosition()">Save Position</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const WORKER_URL = 'https://grasse-apps-proxy.ed-53c.workers.dev';
+const APP_ID = 'stocks';
+
+// ============================================================
+// Worker / Supabase helpers
+// ============================================================
+async function workerCall(payload) {
+  const r = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ appId: APP_ID, ...payload })
+  });
+  if (!r.ok) throw new Error('Worker error: ' + r.status);
+  return r.json();
+}
+
+async function sbGet(table, filters)         { return workerCall({ method: 'SELECT', table, filters: filters || '' }); }
+async function sbInsert(table, row)          { return workerCall({ method: 'INSERT', table, data: row }); }
+async function sbUpdate(table, id, row)      { return workerCall({ method: 'UPDATE', table, idField: 'id', idValue: id, data: row }); }
+async function sbDelete(table, id)           { return workerCall({ method: 'DELETE', table, idField: 'id', idValue: id }); }
+
+async function claudeCall(claudeMethod, extra) {
+  const r = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ appId: APP_ID, method: 'CLAUDE_API', claudeMethod, ...extra })
+  });
+  if (!r.ok) throw new Error('Claude call error: ' + r.status);
+  return r.json();
+}
+
+// ============================================================
+// App State
+// ============================================================
+let positions = [];
+let analysisMap = {};   // position_id → latest analysis
+let notesMap = {};      // position_id → [notes]
+
+// ============================================================
+// Init
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('headerDate').textContent =
+    new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+  await loadAll();
+});
+
+async function loadAll() {
+  try {
+    await loadPositions();
+    await loadLatestAnalysis();
+    await loadNotes();
+    renderAll();
+  } catch (err) {
+    showToast('Failed to load data: ' + err.message, 'error');
+  }
+}
+
+async function loadPositions() {
+  const data = await sbGet('StocksPositions', 'order=created_at.asc');
+  positions = Array.isArray(data) ? data : [];
+}
+
+async function loadLatestAnalysis() {
+  if (!positions.length) return;
+  const data = await sbGet('StocksAnalysis', 'order=created_at.desc');
+  const rows = Array.isArray(data) ? data : [];
+  analysisMap = {};
+  // Keep only the most recent per position
+  rows.forEach(r => {
+    if (!analysisMap[r.position_id]) analysisMap[r.position_id] = r;
+  });
+}
+
+async function loadNotes() {
+  if (!positions.length) return;
+  const data = await sbGet('StocksNotes', 'order=created_at.desc');
+  const rows = Array.isArray(data) ? data : [];
+  notesMap = {};
+  rows.forEach(r => {
+    if (!notesMap[r.position_id]) notesMap[r.position_id] = [];
+    notesMap[r.position_id].push(r);
+  });
+}
+
+// ============================================================
+// Render
+// ============================================================
+function renderAll() {
+  renderSummary();
+  renderPositions('user', 'userPositions');
+  renderPositions('ai-suggested', 'aiPositions');
+}
+
+function renderSummary() {
+  const userPos = positions.filter(p => p.positiontype === 'user');
+  const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
+
+  const calcTotals = (arr) => {
+    let value = 0, cost = 0;
+    arr.forEach(p => {
+      const a = analysisMap[p.id];
+      const price = a ? parseFloat(a.currentprice) : parseFloat(p.entryprice);
+      value += price * parseInt(p.shares);
+      cost  += parseFloat(p.entryprice) * parseInt(p.shares);
+    });
+    return { value, cost, gain: value - cost, pct: cost > 0 ? ((value - cost) / cost * 100) : 0 };
+  };
+
+  const u = calcTotals(userPos);
+  const a = calcTotals(aiPos);
+  const c = { value: u.value + a.value, cost: u.cost + a.cost,
+               gain: u.gain + a.gain, pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0 };
+
+  setSummaryCard('user',     u);
+  setSummaryCard('ai',       a);
+  setSummaryCard('combined', c);
+
+  document.getElementById('userCount').textContent = userPos.length;
+  document.getElementById('aiCount').textContent   = aiPos.length;
+}
+
+function setSummaryCard(type, m) {
+  const prefix = type === 'combined' ? 'combined' : type === 'user' ? 'user' : 'ai';
+  const valEl  = document.getElementById(prefix + 'Value');
+  const gainEl = document.getElementById(prefix + 'Gain');
+  const costEl = document.getElementById(prefix + 'Cost');
+
+  valEl.textContent  = '$' + fmt(m.value);
+  costEl.textContent = 'Cost basis: $' + fmt(m.cost);
+
+  const sign = m.gain >= 0 ? '+' : '';
+  gainEl.textContent = `${sign}$${fmt(Math.abs(m.gain))}  (${sign}${m.pct.toFixed(2)}%)`;
+  gainEl.className   = 'summary-gain ' + (m.cost === 0 ? 'neutral' : m.gain >= 0 ? 'pos' : 'neg');
+}
+
+function renderPositions(type, containerId) {
+  const container = document.getElementById(containerId);
+  const filtered  = positions.filter(p => p.positiontype === type);
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state">
+      <p>No ${type === 'user' ? 'positions' : 'AI suggestions'} yet.</p>
+      <button class="btn btn-outline btn-sm" onclick="openAddModal('${type}')">+ Add ${type === 'user' ? 'Your Pick' : 'AI Suggestion'}</button>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => buildCard(p)).join('');
+}
+
+function buildCard(p) {
+  const a      = analysisMap[p.id];
+  const notes  = notesMap[p.id] || [];
+  const price  = a ? parseFloat(a.currentprice) : parseFloat(p.entryprice);
+  const value  = price * parseInt(p.shares);
+  const cost   = parseFloat(p.entryprice) * parseInt(p.shares);
+  const gain   = value - cost;
+  const gainPct= cost > 0 ? (gain / cost * 100) : 0;
+  const upside = parseFloat(p.targetprice) > 0
+    ? (((parseFloat(p.targetprice) - parseFloat(p.entryprice)) / parseFloat(p.entryprice)) * 100).toFixed(0)
+    : '—';
+
+  const gainClass = gain >= 0 ? 'pos' : 'neg';
+  const gainSign  = gain >= 0 ? '+' : '';
+
+  const analysisHTML = a ? `
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <span class="analysis-date">${a.analysisdate || ''}</span>
+        <span class="thesis-status status-${a.thesisstatus || 'on-track'}">${(a.thesisstatus || 'on-track').replace('-', ' ')}</span>
+      </div>
+      <div class="analysis-comparison">${a.thesiscomparison || ''}</div>
+      <div class="recommendation-block">
+        <div class="recommendation-label">Recommendation</div>
+        <div class="recommendation-text">${a.recommendation || ''}</div>
+      </div>
+      ${a.ainotes ? `<div class="analysis-comparison" style="color:var(--dim);font-size:0.78rem;">${a.ainotes}</div>` : ''}
+      <div class="signal-row">
+        ${a.buysignal  ? '<span class="signal-pill signal-buy">▲ BUY SIGNAL</span>'  : ''}
+        ${a.sellsignal ? '<span class="signal-pill signal-sell">▼ SELL SIGNAL</span>' : ''}
+        ${!a.buysignal && !a.sellsignal ? '<span class="signal-pill signal-hold">● HOLD</span>' : ''}
+      </div>
+    </div>` : `<div class="no-analysis">No analysis yet — click Run Analysis</div>`;
+
+  const notesHTML = notes.slice(0, 3).map(n => `
+    <div class="note-item">
+      <div class="note-date">${n.notedate || ''}</div>
+      ${n.note}
+    </div>`).join('');
+
+  return `
+  <div class="position-card" id="card-${p.id}">
+    <div class="card-header">
+      <div>
+        <div class="card-symbol">${p.symbol}</div>
+        <div class="card-name">${parseInt(p.shares)} SHARES · ENTRY $${parseFloat(p.entryprice).toFixed(2)}</div>
+      </div>
+      <div class="card-price-block">
+        <div class="card-current-price">$${price.toFixed(2)}</div>
+        <div class="card-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
+      </div>
+    </div>
+    <div class="card-metrics">
+      <div class="metric-cell">
+        <div class="metric-label">Value</div>
+        <div class="metric-value">$${fmt(value)}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Cost</div>
+        <div class="metric-value">$${fmt(cost)}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Target</div>
+        <div class="metric-value" style="color:var(--purple)">$${parseFloat(p.targetprice).toFixed(2)}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Upside</div>
+        <div class="metric-value" style="color:var(--purple)">${upside}%</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="thesis-label">Original Thesis</div>
+      <div class="thesis-text">${p.thesis}</div>
+      ${analysisHTML}
+      <div class="notes-section">
+        <div class="thesis-label">Notes</div>
+        ${notesHTML}
+        <div class="add-note-row">
+          <input type="text" id="note-${p.id}" placeholder="Add a note..." onkeydown="if(event.key==='Enter') addNote('${p.id}')">
+          <button class="btn btn-outline btn-sm" onclick="addNote('${p.id}')">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="risk-badge risk-${p.risklevel}">${p.risklevel} risk</span>
+      <span class="target-info">Target <span>$${parseFloat(p.targetprice).toFixed(2)}</span> · ${upside}% upside</span>
+      <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// Add Note
+// ============================================================
+async function addNote(positionId) {
+  const input = document.getElementById('note-' + positionId);
+  const note  = input.value.trim();
+  if (!note) return;
+
+  try {
+    await sbInsert('StocksNotes', {
+      position_id: positionId,
+      note,
+      notedate: today()
+    });
+    input.value = '';
+    if (!notesMap[positionId]) notesMap[positionId] = [];
+    notesMap[positionId].unshift({ note, notedate: today() });
+    renderAll();
+    showToast('Note saved', 'success');
+  } catch (err) {
+    showToast('Failed to save note: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// Delete Position
+// ============================================================
+async function deletePosition(id) {
+  if (!confirm('Remove this position? This will also delete all analysis and notes for it.')) return;
+  try {
+    await sbDelete('StocksPositions', id);
+    positions = positions.filter(p => p.id !== id);
+    delete analysisMap[id];
+    delete notesMap[id];
+    renderAll();
+    showToast('Position removed', 'success');
+  } catch (err) {
+    showToast('Failed to remove position: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// Add Position Modal
+// ============================================================
+function openAddModal(type) {
+  document.getElementById('modalType').value = type;
+  document.getElementById('modalTitle').textContent = type === 'user' ? 'Add Your Pick' : 'Add AI Suggestion';
+  document.getElementById('addModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('show');
+  ['fSymbol','fShares','fEntry','fTarget','fThesis'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fRisk').value = 'medium';
+}
+
+async function savePosition() {
+  const symbol = document.getElementById('fSymbol').value.trim().toUpperCase();
+  const shares = parseInt(document.getElementById('fShares').value);
+  const entry  = parseFloat(document.getElementById('fEntry').value);
+  const target = parseFloat(document.getElementById('fTarget').value);
+  const risk   = document.getElementById('fRisk').value;
+  const thesis = document.getElementById('fThesis').value.trim();
+  const type   = document.getElementById('modalType').value;
+
+  if (!symbol || !shares || !entry || !target || !thesis) {
+    showToast('Please fill in all fields', 'error'); return;
+  }
+
+  try {
+    const result = await sbInsert('StocksPositions', {
+      symbol, shares, entryprice: entry, targetprice: target,
+      risklevel: risk, thesis, positiontype: type
+    });
+
+    const newPos = Array.isArray(result) ? result[0] : result;
+    positions.push(newPos);
+    closeModal();
+    renderAll();
+    showToast(`${symbol} added successfully`, 'success');
+  } catch (err) {
+    showToast('Failed to save: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// Run Daily Analysis
+// ============================================================
+async function runDailyAnalysis() {
+  if (!positions.length) {
+    showToast('No positions to analyze', 'info'); return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>ANALYZING...';
+  showToast('Fetching prices and running AI analysis...', 'info');
+
+  try {
+    const posData = positions.map(p => ({
+      id: p.id,
+      symbol: p.symbol,
+      shares: parseInt(p.shares),
+      entryPrice: parseFloat(p.entryprice),
+      targetPrice: parseFloat(p.targetprice),
+      riskLevel: p.risklevel,
+      thesis: p.thesis,
+      positionType: p.positiontype
+    }));
+
+    const result = await claudeCall('stocksAnalysis', {
+      positions: posData,
+      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations.'
+    });
+
+    if (result.error) throw new Error(result.error);
+
+    const analysisArray = result.analysis || [];
+
+    // Save each analysis record to Supabase
+    for (const a of analysisArray) {
+      const pos = positions.find(p => p.symbol === a.symbol);
+      if (!pos) continue;
+
+      const row = {
+        position_id:       pos.id,
+        analysisdate:      today(),
+        currentprice:      a.currentPrice || parseFloat(pos.entryprice),
+        currentvalue:      a.currentValue || (a.currentPrice * parseInt(pos.shares)),
+        unrealizedgain:    a.unrealizedGain || 0,
+        gainpercent:       a.gainPercent || 0,
+        thesisstatus:      a.thesisStatus || 'on-track',
+        thesiscomparison:  a.thesisComparison || '',
+        buysignal:         a.buySignal || false,
+        sellsignal:        a.sellSignal || false,
+        recommendation:    a.recommendation || '',
+        ainotes:           a.aiNotes || ''
+      };
+
+      const saved = await sbInsert('StocksAnalysis', row);
+      const savedRow = Array.isArray(saved) ? saved[0] : saved;
+      analysisMap[pos.id] = savedRow;
+    }
+
+    // Save portfolio summary
+    const userPos = positions.filter(p => p.positiontype === 'user');
+    const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
+
+    const calcTot = (arr) => {
+      let value = 0, cost = 0;
+      arr.forEach(p => {
+        const a2 = analysisMap[p.id];
+        const price = a2 ? parseFloat(a2.currentprice) : parseFloat(p.entryprice);
+        value += price * parseInt(p.shares);
+        cost  += parseFloat(p.entryprice) * parseInt(p.shares);
+      });
+      return { value, cost };
+    };
+
+    const u = calcTot(userPos);
+    const ai = calcTot(aiPos);
+
+    await sbInsert('StocksPortfolioSummary', {
+      summarydate:        today(),
+      usertotalvalue:     u.value,
+      usertotalcost:      u.cost,
+      usertotalgain:      u.value - u.cost,
+      usergainpercent:    u.cost > 0 ? ((u.value - u.cost) / u.cost * 100) : 0,
+      aitotalvalue:       ai.value,
+      aitotalcost:        ai.cost,
+      aitotalgain:        ai.value - ai.cost,
+      aigainpercent:      ai.cost > 0 ? ((ai.value - ai.cost) / ai.cost * 100) : 0,
+      combinedtotalvalue: u.value + ai.value
+    });
+
+    document.getElementById('lastUpdated').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    renderAll();
+    showToast('Analysis complete — all positions updated', 'success');
+
+  } catch (err) {
+    showToast('Analysis failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⟳ RUN ANALYSIS';
+  }
+}
+
+// ============================================================
+// Utilities
+// ============================================================
+function fmt(n) {
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.classList.remove('show'); }, 4000);
+}
+
+// Close modal on overlay click
+document.getElementById('addModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
