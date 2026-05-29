@@ -42,7 +42,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -57,7 +56,6 @@
 
   .app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
 
-  /* Header */
   .header {
     display: flex;
     justify-content: space-between;
@@ -87,7 +85,6 @@
 
   .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
-  /* Buttons */
   .btn {
     font-family: 'Space Mono', monospace;
     font-size: 0.75rem;
@@ -102,40 +99,17 @@
     white-space: nowrap;
   }
 
-  .btn-primary {
-    background: var(--cyan);
-    color: var(--bg);
-  }
+  .btn-primary { background: var(--cyan); color: var(--bg); }
   .btn-primary:hover { background: #33ddff; transform: translateY(-1px); }
-
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border: 1px solid var(--cyan);
-  }
+  .btn-outline { background: transparent; color: var(--cyan); border: 1px solid var(--cyan); }
   .btn-outline:hover { background: var(--cyan-dim); }
-
-  .btn-ghost {
-    background: var(--surface);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
+  .btn-ghost { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
-
-  .btn-danger {
-    background: transparent;
-    color: var(--red);
-    border: 1px solid var(--red);
-    padding: 6px 12px;
-    font-size: 0.7rem;
-  }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 6px 12px; font-size: 0.7rem; }
   .btn-danger:hover { background: var(--red-dim); }
-
   .btn-sm { padding: 6px 14px; font-size: 0.7rem; }
-
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  /* Summary cards */
   .summary-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -163,7 +137,6 @@
   .summary-card.user::before { background: var(--cyan); }
   .summary-card.ai::before { background: var(--purple); }
   .summary-card.combined::before { background: var(--green); }
-
   .summary-card:hover { border-color: var(--border2); }
 
   .summary-label {
@@ -178,12 +151,7 @@
     gap: 8px;
   }
 
-  .summary-label .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
+  .summary-label .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .summary-card.user .dot { background: var(--cyan); }
   .summary-card.ai .dot { background: var(--purple); }
   .summary-card.combined .dot { background: var(--green); }
@@ -197,24 +165,12 @@
     line-height: 1;
   }
 
-  .summary-gain {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-
+  .summary-gain { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
   .summary-gain.pos { color: var(--green); }
   .summary-gain.neg { color: var(--red); }
   .summary-gain.neutral { color: var(--muted); }
+  .summary-cost { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--dim); margin-top: 6px; }
 
-  .summary-cost {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--dim);
-    margin-top: 6px;
-  }
-
-  /* Last updated */
   .last-updated {
     font-family: 'Space Mono', monospace;
     font-size: 0.7rem;
@@ -224,7 +180,6 @@
     margin-top: -24px;
   }
 
-  /* Section headers */
   .section-header {
     display: flex;
     justify-content: space-between;
@@ -256,10 +211,8 @@
   .badge-user { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
   .badge-ai { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(157,110,255,0.2); }
 
-  /* Positions section */
   .positions-section { margin-bottom: 48px; }
 
-  /* Position cards grid */
   .positions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
@@ -284,43 +237,15 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .card-symbol {
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--cyan);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .card-name {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-  }
-
+  .card-symbol { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--cyan); line-height: 1; margin-bottom: 4px; }
+  .card-name { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.08em; }
   .card-price-block { text-align: right; }
-
-  .card-current-price {
-    font-family: 'Space Mono', monospace;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .card-gain {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-
+  .card-current-price { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .card-gain { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
   .card-gain.pos { color: var(--green); }
   .card-gain.neg { color: var(--red); }
   .card-gain.neutral { color: var(--muted); }
 
-  /* Card metrics row */
   .card-metrics {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -329,48 +254,14 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .metric-cell {
-    background: var(--surface);
-    padding: 12px 14px;
-    text-align: center;
-  }
+  .metric-cell { background: var(--surface); padding: 12px 14px; text-align: center; }
+  .metric-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .metric-value { font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700; color: var(--text); }
 
-  .metric-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-  }
-
-  .metric-value {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  /* Card body */
   .card-body { padding: 16px 20px; }
+  .thesis-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 8px; }
+  .thesis-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
 
-  .thesis-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--dim);
-    margin-bottom: 8px;
-  }
-
-  .thesis-text {
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-
-  /* Analysis block */
   .analysis-block {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -379,18 +270,8 @@
     margin-bottom: 14px;
   }
 
-  .analysis-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .analysis-date {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--dim);
-  }
+  .analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .analysis-date { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--dim); }
 
   .thesis-status {
     font-family: 'Space Mono', monospace;
@@ -407,12 +288,7 @@
   .status-diverging { background: rgba(255,184,48,0.1); color: var(--diverging); border: 1px solid rgba(255,184,48,0.2); }
   .status-broken { background: rgba(255,75,110,0.1); color: var(--broken); border: 1px solid rgba(255,75,110,0.2); }
 
-  .analysis-comparison {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 10px;
-  }
+  .analysis-comparison { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
 
   .recommendation-block {
     background: var(--bg);
@@ -422,26 +298,10 @@
     margin-bottom: 10px;
   }
 
-  .recommendation-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--cyan);
-    margin-bottom: 4px;
-  }
+  .recommendation-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cyan); margin-bottom: 4px; }
+  .recommendation-text { font-size: 0.82rem; color: var(--text); line-height: 1.5; }
 
-  .recommendation-text {
-    font-size: 0.82rem;
-    color: var(--text);
-    line-height: 1.5;
-  }
-
-  .signal-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-  }
+  .signal-row { display: flex; gap: 8px; margin-top: 10px; }
 
   .signal-pill {
     font-family: 'Space Mono', monospace;
@@ -457,7 +317,6 @@
   .signal-sell { background: rgba(255,75,110,0.15); color: var(--red); border: 1px solid rgba(255,75,110,0.3); }
   .signal-hold { background: rgba(107,125,150,0.15); color: var(--muted); border: 1px solid rgba(107,125,150,0.3); }
 
-  /* Notes section */
   .notes-section { margin-top: 14px; }
 
   .note-item {
@@ -471,18 +330,9 @@
     line-height: 1.5;
   }
 
-  .note-date {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--dim);
-    margin-bottom: 4px;
-  }
+  .note-date { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--dim); margin-bottom: 4px; }
 
-  .add-note-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-  }
+  .add-note-row { display: flex; gap: 8px; margin-top: 10px; }
 
   .add-note-row input {
     flex: 1;
@@ -498,7 +348,6 @@
   .add-note-row input:focus { outline: none; border-color: var(--cyan); }
   .add-note-row input::placeholder { color: var(--dim); }
 
-  /* Card footer */
   .card-footer {
     padding: 12px 20px;
     border-top: 1px solid var(--border);
@@ -521,15 +370,9 @@
   .risk-medium { background: rgba(255,184,48,0.1); color: var(--amber); border: 1px solid rgba(255,184,48,0.15); }
   .risk-high { background: rgba(255,75,110,0.1); color: var(--red); border: 1px solid rgba(255,75,110,0.15); }
 
-  .target-info {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--dim);
-  }
-
+  .target-info { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--dim); }
   .target-info span { color: var(--purple); font-weight: 700; }
 
-  /* Modal */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -555,12 +398,7 @@
     overflow-y: auto;
   }
 
-  .modal h2 {
-    font-size: 1.3rem;
-    font-weight: 800;
-    margin-bottom: 24px;
-    color: var(--text);
-  }
+  .modal h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 24px; color: var(--text); }
 
   .form-group { margin-bottom: 18px; }
 
@@ -590,23 +428,13 @@
 
   .form-group input:focus,
   .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--cyan);
-  }
-
-  .form-group input::placeholder,
-  .form-group textarea::placeholder { color: var(--dim); }
-
+  .form-group textarea:focus { outline: none; border-color: var(--cyan); }
+  .form-group input::placeholder, .form-group textarea::placeholder { color: var(--dim); }
   .form-group select option { background: var(--surface2); }
-
   .form-group textarea { min-height: 90px; resize: vertical; }
-
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
   .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
 
-  /* Toast */
   .toast {
     position: fixed;
     bottom: 32px;
@@ -630,7 +458,6 @@
   .toast.error { border-left: 3px solid var(--red); }
   .toast.info { border-left: 3px solid var(--cyan); }
 
-  /* Loading spinner */
   .spinner {
     display: inline-block;
     width: 14px; height: 14px;
@@ -644,7 +471,6 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Empty state */
   .empty-state {
     background: var(--surface);
     border: 1px dashed var(--border2);
@@ -657,7 +483,6 @@
 
   .empty-state p { margin-bottom: 20px; }
 
-  /* No analysis state */
   .no-analysis {
     background: var(--surface2);
     border: 1px dashed var(--border);
@@ -670,7 +495,6 @@
     margin-bottom: 14px;
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
@@ -690,8 +514,6 @@
 <body>
 
 <div class="app">
-
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <h1>STOCK <span>ANALYZER</span></h1>
@@ -704,7 +526,6 @@
     </div>
   </div>
 
-  <!-- Summary Cards -->
   <div class="summary-grid">
     <div class="summary-card user">
       <div class="summary-label"><span class="dot"></span>Your Positions</div>
@@ -728,7 +549,6 @@
 
   <div class="last-updated" id="lastUpdated">Not yet updated today — click Run Analysis</div>
 
-  <!-- Your Positions -->
   <div class="positions-section">
     <div class="section-header">
       <div class="section-title">
@@ -744,7 +564,6 @@
     </div>
   </div>
 
-  <!-- AI Suggested Positions -->
   <div class="positions-section">
     <div class="section-header">
       <div class="section-title">
@@ -759,10 +578,8 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- Add Position Modal -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <h2 id="modalTitle">Add Position</h2>
@@ -770,7 +587,7 @@
     <div class="form-row">
       <div class="form-group">
         <label>Symbol</label>
-        <input type="text" id="fSymbol" placeholder="e.g. MRVL" oninput="this.value=this.value.toUpperCase()">
+        <input type="text" id="fSymbol" placeholder="e.g. MRVL" oninput="this.value=this.value.toUpperCase(); autofillPosition(this.value)">
       </div>
       <div class="form-group">
         <label>Shares</label>
@@ -797,7 +614,7 @@
     </div>
     <div class="form-group">
       <label>Investment Thesis</label>
-      <textarea id="fThesis" placeholder="Why are you buying this? What's the growth thesis?"></textarea>
+      <textarea id="fThesis" placeholder="Why are you buying this?"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="savePosition()">Save Position</button>
@@ -806,19 +623,44 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// CONFIG
-// ============================================================
 const WORKER_URL = 'https://grasse-apps-proxy.ed-53c.workers.dev';
 const APP_ID = 'stocks';
 
 // ============================================================
-// Worker / Supabase helpers
+// PRE-LOADED POSITION DATA — verified May 28, 2026
+// Thesis, targets, and buy/sell levels based on current data
 // ============================================================
+const SEED_POSITIONS = {
+  'MRVL': {
+    targetprice: 260,
+    risklevel: 'medium',
+    thesis: 'Custom AI silicon dominant play. Q1 FY2027 earnings beat May 27 — raised FY2027 revenue to $11.5B (+40% YoY). Demand broadening across custom silicon, interconnect and switching. Amazon Trainium, Microsoft Maia, Google Axion design wins. Multiple analysts raised targets today (BofA $240, KeyBanc $260, Benchmark $275). Margin expansion from high 20s toward 30s as AI mix grows. Buy more below $185. Take 25% profits above $280. Exit if custom ASIC wins slow or revenue guidance cut below 35% growth.'
+  },
+  'CRDO': {
+    targetprice: 300,
+    risklevel: 'medium',
+    thesis: 'Active electrical cables (AECs) solving power and density problems in AI data centers. Q3 FY2026 showed 201.5% YoY revenue growth and 328% YoY EPS growth. DustPhotonics acquisition expands TAM in optical and AEC for hyperscalers. Three 10%+ customers diversifying revenue base. $1.3B cash position. Q4 earnings June 1 is next major catalyst — beat expected. Buy more below $190 post-earnings on any volatility. Take 25% profits above $270. Exit if revenue growth drops below 100% YoY or hyperscaler customers pull back.'
+  },
+  'ALAB': {
+    targetprice: 380,
+    risklevel: 'high',
+    thesis: 'Fastest growing connectivity infrastructure play. Q1 2026 revenue $308M up 93.5% YoY, EPS $0.61 vs $0.54 estimate. Q2 guidance $355-365M vs consensus $310M — massive beat. Scorpio X-Series 320-lane AI fabric switch driving hyperscaler adoption. PCIe 6 solutions growing. Computex 2026 showcase June 2-5 is next catalyst. Evercore ISI target $297. Note: median analyst target implies some downside — high conviction growth bet, not a value play. Buy more below $280. Take 25% profits above $370. Exit if revenue growth drops below 70% or Scorpio switch loses traction.'
+  },
+  'AAOI': {
+    targetprice: 250,
+    risklevel: 'high',
+    thesis: 'Optical transceiver supplier for AI data centers. 2026 revenue guidance over $1B driven by 800G and 1.6T product ramps. Secured significant hyperscale orders and $20.9M Texas grant for expansion. Cheaper entry than LITE or COHR. WARNING: Q1 EPS missed at -7c vs -5c consensus, Q2 guidance below expectations. Executives sold large blocks of shares in May — insider selling is a red flag. Monitor closely. Buy more below $160. Take 25% profits above $230. Exit if insider selling continues or 800G ramp delays materialize.'
+  },
+  'AMAT': {
+    targetprice: 550,
+    risklevel: 'low',
+    thesis: 'Semiconductor equipment maker riding the AI capex wave. Picks and shovels play — every chip fab needs AMAT equipment regardless of which AI chip wins. BofA lists as key beneficiary of semiconductor boom. Most conservative position in the portfolio — the ballast that stabilizes against growth stock volatility. Analyst consensus target $470 with upside to $550 on continued capex cycle. Buy more below $400 on any semis correction. Take 25% profits above $560. Exit if semiconductor capex cycle turns down or China export restrictions materially impact revenue.'
+  }
+};
+
 async function workerCall(payload) {
   const r = await fetch(WORKER_URL, {
     method: 'POST',
@@ -829,10 +671,9 @@ async function workerCall(payload) {
   return r.json();
 }
 
-async function sbGet(table, filters)         { return workerCall({ method: 'SELECT', table, filters: filters || '' }); }
-async function sbInsert(table, row)          { return workerCall({ method: 'INSERT', table, data: row }); }
-async function sbUpdate(table, id, row)      { return workerCall({ method: 'UPDATE', table, idField: 'id', idValue: id, data: row }); }
-async function sbDelete(table, id)           { return workerCall({ method: 'DELETE', table, idField: 'id', idValue: id }); }
+async function sbGet(table, filters)    { return workerCall({ method: 'SELECT', table, filters: filters || '' }); }
+async function sbInsert(table, row)     { return workerCall({ method: 'INSERT', table, data: row }); }
+async function sbDelete(table, id)      { return workerCall({ method: 'DELETE', table, idField: 'id', idValue: id }); }
 
 async function claudeCall(claudeMethod, extra) {
   const r = await fetch(WORKER_URL, {
@@ -844,16 +685,10 @@ async function claudeCall(claudeMethod, extra) {
   return r.json();
 }
 
-// ============================================================
-// App State
-// ============================================================
 let positions = [];
-let analysisMap = {};   // position_id → latest analysis
-let notesMap = {};      // position_id → [notes]
+let analysisMap = {};
+let notesMap = {};
 
-// ============================================================
-// Init
-// ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('headerDate').textContent =
     new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
@@ -881,10 +716,7 @@ async function loadLatestAnalysis() {
   const data = await sbGet('StocksAnalysis', 'order=created_at.desc');
   const rows = Array.isArray(data) ? data : [];
   analysisMap = {};
-  // Keep only the most recent per position
-  rows.forEach(r => {
-    if (!analysisMap[r.position_id]) analysisMap[r.position_id] = r;
-  });
+  rows.forEach(r => { if (!analysisMap[r.position_id]) analysisMap[r.position_id] = r; });
 }
 
 async function loadNotes() {
@@ -898,9 +730,6 @@ async function loadNotes() {
   });
 }
 
-// ============================================================
-// Render
-// ============================================================
 function renderAll() {
   renderSummary();
   renderPositions('user', 'userPositions');
@@ -924,11 +753,15 @@ function renderSummary() {
 
   const u = calcTotals(userPos);
   const a = calcTotals(aiPos);
-  const c = { value: u.value + a.value, cost: u.cost + a.cost,
-               gain: u.gain + a.gain, pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0 };
+  const c = {
+    value: u.value + a.value,
+    cost: u.cost + a.cost,
+    gain: u.gain + a.gain,
+    pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0
+  };
 
-  setSummaryCard('user',     u);
-  setSummaryCard('ai',       a);
+  setSummaryCard('user', u);
+  setSummaryCard('ai', a);
   setSummaryCard('combined', c);
 
   document.getElementById('userCount').textContent = userPos.length;
@@ -940,10 +773,8 @@ function setSummaryCard(type, m) {
   const valEl  = document.getElementById(prefix + 'Value');
   const gainEl = document.getElementById(prefix + 'Gain');
   const costEl = document.getElementById(prefix + 'Cost');
-
   valEl.textContent  = '$' + fmt(m.value);
   costEl.textContent = 'Cost basis: $' + fmt(m.cost);
-
   const sign = m.gain >= 0 ? '+' : '';
   gainEl.textContent = `${sign}$${fmt(Math.abs(m.gain))}  (${sign}${m.pct.toFixed(2)}%)`;
   gainEl.className   = 'summary-gain ' + (m.cost === 0 ? 'neutral' : m.gain >= 0 ? 'pos' : 'neg');
@@ -952,7 +783,6 @@ function setSummaryCard(type, m) {
 function renderPositions(type, containerId) {
   const container = document.getElementById(containerId);
   const filtered  = positions.filter(p => p.positiontype === type);
-
   if (!filtered.length) {
     container.innerHTML = `<div class="empty-state">
       <p>No ${type === 'user' ? 'positions' : 'AI suggestions'} yet.</p>
@@ -960,7 +790,6 @@ function renderPositions(type, containerId) {
     </div>`;
     return;
   }
-
   container.innerHTML = filtered.map(p => buildCard(p)).join('');
 }
 
@@ -1035,7 +864,7 @@ function buildCard(p) {
       </div>
     </div>
     <div class="card-body">
-      <div class="thesis-label">Original Thesis</div>
+      <div class="thesis-label">Investment Thesis</div>
       <div class="thesis-text">${p.thesis}</div>
       ${analysisHTML}
       <div class="notes-section">
@@ -1055,20 +884,22 @@ function buildCard(p) {
   </div>`;
 }
 
-// ============================================================
-// Add Note
-// ============================================================
+// Auto-fill thesis and target when symbol is typed
+function autofillPosition(symbol) {
+  const seed = SEED_POSITIONS[symbol.toUpperCase()];
+  if (seed) {
+    document.getElementById('fTarget').value = seed.targetprice;
+    document.getElementById('fRisk').value   = seed.risklevel;
+    document.getElementById('fThesis').value = seed.thesis;
+  }
+}
+
 async function addNote(positionId) {
   const input = document.getElementById('note-' + positionId);
   const note  = input.value.trim();
   if (!note) return;
-
   try {
-    await sbInsert('StocksNotes', {
-      position_id: positionId,
-      note,
-      notedate: today()
-    });
+    await sbInsert('StocksNotes', { position_id: positionId, note, notedate: today() });
     input.value = '';
     if (!notesMap[positionId]) notesMap[positionId] = [];
     notesMap[positionId].unshift({ note, notedate: today() });
@@ -1079,9 +910,6 @@ async function addNote(positionId) {
   }
 }
 
-// ============================================================
-// Delete Position
-// ============================================================
 async function deletePosition(id) {
   if (!confirm('Remove this position? This will also delete all analysis and notes for it.')) return;
   try {
@@ -1096,9 +924,6 @@ async function deletePosition(id) {
   }
 }
 
-// ============================================================
-// Add Position Modal
-// ============================================================
 function openAddModal(type) {
   document.getElementById('modalType').value = type;
   document.getElementById('modalTitle').textContent = type === 'user' ? 'Add Your Pick' : 'Add AI Suggestion';
@@ -1131,7 +956,6 @@ async function savePosition() {
       symbol, shares, entryprice: entry, targetprice: target,
       risklevel: risk, thesis, positiontype: type
     });
-
     const newPos = Array.isArray(result) ? result[0] : result;
     positions.push(newPos);
     closeModal();
@@ -1142,13 +966,8 @@ async function savePosition() {
   }
 }
 
-// ============================================================
-// Run Daily Analysis
-// ============================================================
 async function runDailyAnalysis() {
-  if (!positions.length) {
-    showToast('No positions to analyze', 'info'); return;
-  }
+  if (!positions.length) { showToast('No positions to analyze', 'info'); return; }
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
@@ -1169,31 +988,30 @@ async function runDailyAnalysis() {
 
     const result = await claudeCall('stocksAnalysis', {
       positions: posData,
-      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations.'
+      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations. Use current market context. Do not recommend selling just because price is near target — reassess target against current growth trajectory.'
     });
 
     if (result.error) throw new Error(result.error);
 
     const analysisArray = result.analysis || [];
 
-    // Save each analysis record to Supabase
     for (const a of analysisArray) {
       const pos = positions.find(p => p.symbol === a.symbol);
       if (!pos) continue;
 
       const row = {
-        position_id:       pos.id,
-        analysisdate:      today(),
-        currentprice:      a.currentPrice || parseFloat(pos.entryprice),
-        currentvalue:      a.currentValue || (a.currentPrice * parseInt(pos.shares)),
-        unrealizedgain:    a.unrealizedGain || 0,
-        gainpercent:       a.gainPercent || 0,
-        thesisstatus:      a.thesisStatus || 'on-track',
-        thesiscomparison:  a.thesisComparison || '',
-        buysignal:         a.buySignal || false,
-        sellsignal:        a.sellSignal || false,
-        recommendation:    a.recommendation || '',
-        ainotes:           a.aiNotes || ''
+        position_id:      pos.id,
+        analysisdate:     today(),
+        currentprice:     a.currentPrice || parseFloat(pos.entryprice),
+        currentvalue:     a.currentValue || (a.currentPrice * parseInt(pos.shares)),
+        unrealizedgain:   a.unrealizedGain || 0,
+        gainpercent:      a.gainPercent || 0,
+        thesisstatus:     a.thesisStatus || 'on-track',
+        thesiscomparison: a.thesisComparison || '',
+        buysignal:        a.buySignal || false,
+        sellsignal:       a.sellSignal || false,
+        recommendation:   a.recommendation || '',
+        ainotes:          a.aiNotes || ''
       };
 
       const saved = await sbInsert('StocksAnalysis', row);
@@ -1201,7 +1019,6 @@ async function runDailyAnalysis() {
       analysisMap[pos.id] = savedRow;
     }
 
-    // Save portfolio summary
     const userPos = positions.filter(p => p.positiontype === 'user');
     const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
 
@@ -1246,9 +1063,6 @@ async function runDailyAnalysis() {
   }
 }
 
-// ============================================================
-// Utilities
-// ============================================================
 function fmt(n) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -1264,7 +1078,6 @@ function showToast(msg, type = 'info') {
   setTimeout(() => { t.classList.remove('show'); }, 4000);
 }
 
-// Close modal on overlay click
 document.getElementById('addModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
