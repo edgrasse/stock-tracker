@@ -17,7 +17,6 @@
     --dim: #3a4d66;
     --cyan: #00d4ff;
     --cyan-dim: rgba(0,212,255,0.08);
-    --cyan-mid: rgba(0,212,255,0.15);
     --green: #00e676;
     --green-dim: rgba(0,230,118,0.08);
     --red: #ff4b6e;
@@ -26,10 +25,6 @@
     --amber-dim: rgba(255,184,48,0.08);
     --purple: #9d6eff;
     --purple-dim: rgba(157,110,255,0.08);
-    --on-track: #00e676;
-    --accelerating: #00d4ff;
-    --diverging: #ffb830;
-    --broken: #ff4b6e;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,44 +49,45 @@
     z-index: 0;
   }
 
-  .app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+  .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 
+  /* ── Header ── */
   .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 48px;
-    padding-bottom: 32px;
+    margin-bottom: 40px;
+    padding-bottom: 28px;
     border-bottom: 1px solid var(--border);
   }
 
-  .header-left h1 {
-    font-size: 2.8rem;
+  .header h1 {
+    font-size: 2.6rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: var(--text);
     line-height: 1;
     margin-bottom: 8px;
   }
 
-  .header-left h1 span { color: var(--cyan); }
+  .header h1 span { color: var(--cyan); }
 
-  .header-left p {
+  .header p {
     font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--muted);
     letter-spacing: 0.1em;
   }
 
-  .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
+  /* ── Buttons ── */
   .btn {
     font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 10px 20px;
+    padding: 10px 18px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -105,26 +101,26 @@
   .btn-outline:hover { background: var(--cyan-dim); }
   .btn-ghost { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 6px 12px; font-size: 0.7rem; }
-  .btn-danger:hover { background: var(--red-dim); }
-  .btn-sm { padding: 6px 14px; font-size: 0.7rem; }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(255,75,110,0.4); font-size: 0.68rem; padding: 6px 12px; }
+  .btn-danger:hover { background: var(--red-dim); border-color: var(--red); }
+  .btn-sm { padding: 6px 12px; font-size: 0.68rem; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+  /* ── Summary Cards ── */
   .summary-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 40px;
+    gap: 14px;
+    margin-bottom: 36px;
   }
 
   .summary-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 24px;
+    padding: 20px 24px;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s;
   }
 
   .summary-card::before {
@@ -137,116 +133,175 @@
   .summary-card.user::before { background: var(--cyan); }
   .summary-card.ai::before { background: var(--purple); }
   .summary-card.combined::before { background: var(--green); }
-  .summary-card:hover { border-color: var(--border2); }
 
-  .summary-label {
+  .s-label {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
   }
 
-  .summary-label .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .summary-card.user .dot { background: var(--cyan); }
-  .summary-card.ai .dot { background: var(--purple); }
-  .summary-card.combined .dot { background: var(--green); }
+  .s-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .summary-card.user .s-dot { background: var(--cyan); }
+  .summary-card.ai .s-dot { background: var(--purple); }
+  .summary-card.combined .s-dot { background: var(--green); }
 
-  .summary-value {
-    font-size: 2.2rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--text);
-    margin-bottom: 8px;
-    line-height: 1;
-  }
-
-  .summary-gain { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
-  .summary-gain.pos { color: var(--green); }
-  .summary-gain.neg { color: var(--red); }
-  .summary-gain.neutral { color: var(--muted); }
-  .summary-cost { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--dim); margin-top: 6px; }
+  .s-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .s-gain { font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700; }
+  .s-gain.pos { color: var(--green); }
+  .s-gain.neg { color: var(--red); }
+  .s-gain.neutral { color: var(--muted); }
+  .s-cost { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--dim); margin-top: 5px; }
 
   .last-updated {
     font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--dim);
     text-align: right;
-    margin-bottom: 32px;
-    margin-top: -24px;
+    margin-bottom: 28px;
+    margin-top: -20px;
   }
 
+  /* ── Section Headers ── */
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
   }
 
   .section-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .section-badge {
+  .s-badge {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    padding: 3px 10px;
+    font-size: 0.62rem;
+    padding: 2px 9px;
     border-radius: 2px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
   }
 
   .badge-user { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
-  .badge-ai { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(157,110,255,0.2); }
+  .badge-ai   { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(157,110,255,0.2); }
 
   .positions-section { margin-bottom: 48px; }
 
-  .positions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 16px;
-  }
+  /* ── Position Cards ── */
+  .positions-list { display: flex; flex-direction: column; gap: 12px; }
 
-  .position-card {
+  .pos-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
-    transition: all 0.2s;
+    transition: border-color 0.2s;
   }
 
-  .position-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .pos-card:hover { border-color: var(--border2); }
 
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border);
+  /* Top row — always visible */
+  .pos-top {
+    display: grid;
+    grid-template-columns: 120px 1fr auto auto;
+    align-items: center;
+    gap: 24px;
+    padding: 18px 20px;
+    cursor: pointer;
+    user-select: none;
   }
 
-  .card-symbol { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--cyan); line-height: 1; margin-bottom: 4px; }
-  .card-name { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.08em; }
-  .card-price-block { text-align: right; }
-  .card-current-price { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .card-gain { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
-  .card-gain.pos { color: var(--green); }
-  .card-gain.neg { color: var(--red); }
-  .card-gain.neutral { color: var(--muted); }
+  .pos-top:hover { background: rgba(255,255,255,0.01); }
 
-  .card-metrics {
+  .pos-symbol { font-size: 1.5rem; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; }
+  .pos-meta { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
+
+  /* Price block */
+  .pos-price-block { text-align: right; min-width: 100px; }
+  .pos-price { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; }
+  .pos-gain { font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+  .pos-gain.pos { color: var(--green); }
+  .pos-gain.neg { color: var(--red); }
+  .pos-gain.neutral { color: var(--muted); }
+
+  /* Recommendation pill — center of card */
+  .pos-rec-block { flex: 1; padding: 0 16px; }
+
+  .rec-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .rec-hold    { background: rgba(107,125,150,0.15); color: var(--muted); border: 1px solid rgba(107,125,150,0.3); }
+  .rec-buy     { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .rec-sell    { background: rgba(255,75,110,0.12); color: var(--red); border: 1px solid rgba(255,75,110,0.3); }
+  .rec-watch   { background: rgba(255,184,48,0.12); color: var(--amber); border: 1px solid rgba(255,184,48,0.3); }
+  .rec-none    { background: var(--surface2); color: var(--dim); border: 1px solid var(--border); }
+
+  .rec-bullets { list-style: none; padding: 0; }
+
+  .rec-bullets li {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+    padding-left: 14px;
+    position: relative;
+    margin-bottom: 3px;
+  }
+
+  .rec-bullets li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: var(--dim);
+  }
+
+  /* Expand toggle */
+  .pos-expand-btn {
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+    transition: color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .pos-expand-btn:hover { color: var(--muted); }
+  .pos-expand-btn.open { transform: rotate(180deg); color: var(--cyan); }
+
+  /* Expandable detail */
+  .pos-detail {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .pos-detail.open { display: block; }
+
+  .detail-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1px;
@@ -254,28 +309,41 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .metric-cell { background: var(--surface); padding: 12px 14px; text-align: center; }
-  .metric-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-  .metric-value { font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .detail-cell { background: var(--surface2); padding: 12px 16px; text-align: center; }
+  .detail-label { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .detail-value { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
 
-  .card-body { padding: 16px 20px; }
-  .thesis-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 8px; }
-  .thesis-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+  .detail-body { padding: 20px; }
 
-  .analysis-block {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px;
-    margin-bottom: 14px;
+  .detail-section { margin-bottom: 20px; }
+
+  .detail-section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
   }
 
-  .analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .analysis-date { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--dim); }
+  .detail-text {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .thesis-status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
 
   .thesis-status {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 2px;
@@ -283,54 +351,26 @@
     letter-spacing: 0.08em;
   }
 
-  .status-on-track { background: rgba(0,230,118,0.1); color: var(--on-track); border: 1px solid rgba(0,230,118,0.2); }
-  .status-accelerating { background: rgba(0,212,255,0.1); color: var(--accelerating); border: 1px solid rgba(0,212,255,0.2); }
-  .status-diverging { background: rgba(255,184,48,0.1); color: var(--diverging); border: 1px solid rgba(255,184,48,0.2); }
-  .status-broken { background: rgba(255,75,110,0.1); color: var(--broken); border: 1px solid rgba(255,75,110,0.2); }
+  .status-on-track    { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+  .status-accelerating{ background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+  .status-diverging   { background: rgba(255,184,48,0.1); color: var(--amber); border: 1px solid rgba(255,184,48,0.2); }
+  .status-broken      { background: rgba(255,75,110,0.1); color: var(--red); border: 1px solid rgba(255,75,110,0.2); }
 
-  .analysis-comparison { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+  .analysis-date { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--dim); }
 
-  .recommendation-block {
-    background: var(--bg);
-    border-left: 2px solid var(--cyan);
-    padding: 10px 14px;
-    border-radius: 0 4px 4px 0;
-    margin-bottom: 10px;
-  }
-
-  .recommendation-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cyan); margin-bottom: 4px; }
-  .recommendation-text { font-size: 0.82rem; color: var(--text); line-height: 1.5; }
-
-  .signal-row { display: flex; gap: 8px; margin-top: 10px; }
-
-  .signal-pill {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .signal-buy { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
-  .signal-sell { background: rgba(255,75,110,0.15); color: var(--red); border: 1px solid rgba(255,75,110,0.3); }
-  .signal-hold { background: rgba(107,125,150,0.15); color: var(--muted); border: 1px solid rgba(107,125,150,0.3); }
-
-  .notes-section { margin-top: 14px; }
-
+  /* Notes */
   .note-item {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 4px;
     padding: 10px 14px;
     margin-bottom: 8px;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     color: var(--muted);
     line-height: 1.5;
   }
 
-  .note-date { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--dim); margin-bottom: 4px; }
+  .note-date { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--dim); margin-bottom: 4px; }
 
   .add-note-row { display: flex; gap: 8px; margin-top: 10px; }
 
@@ -342,18 +382,20 @@
     padding: 8px 12px;
     color: var(--text);
     font-family: 'Syne', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
   }
 
   .add-note-row input:focus { outline: none; border-color: var(--cyan); }
   .add-note-row input::placeholder { color: var(--dim); }
 
-  .card-footer {
+  /* Card footer */
+  .pos-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px 20px;
     border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: var(--surface2);
   }
 
   .risk-badge {
@@ -363,20 +405,23 @@
     padding: 3px 10px;
     border-radius: 2px;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
   }
 
-  .risk-low { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.15); }
+  .risk-low    { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.15); }
   .risk-medium { background: rgba(255,184,48,0.1); color: var(--amber); border: 1px solid rgba(255,184,48,0.15); }
-  .risk-high { background: rgba(255,75,110,0.1); color: var(--red); border: 1px solid rgba(255,75,110,0.15); }
+  .risk-high   { background: rgba(255,75,110,0.1); color: var(--red); border: 1px solid rgba(255,75,110,0.15); }
 
-  .target-info { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--dim); }
+  .target-info { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--dim); }
   .target-info span { color: var(--purple); font-weight: 700; }
 
+  .footer-spacer { flex: 1; }
+
+  /* ── Modals ── */
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(8,12,18,0.85);
+    background: rgba(8,12,18,0.88);
     backdrop-filter: blur(4px);
     z-index: 1000;
     display: none;
@@ -391,25 +436,25 @@
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 10px;
-    padding: 32px;
+    padding: 28px;
     width: 100%;
-    max-width: 560px;
+    max-width: 540px;
     max-height: 90vh;
     overflow-y: auto;
   }
 
-  .modal h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 24px; color: var(--text); }
+  .modal h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; }
 
-  .form-group { margin-bottom: 18px; }
+  .form-group { margin-bottom: 16px; }
 
   .form-group label {
     display: block;
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--muted);
-    margin-bottom: 8px;
+    margin-bottom: 7px;
   }
 
   .form-group input,
@@ -419,11 +464,10 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 10px 14px;
+    padding: 9px 12px;
     color: var(--text);
     font-family: 'Syne', sans-serif;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
+    font-size: 0.88rem;
   }
 
   .form-group input:focus,
@@ -431,155 +475,151 @@
   .form-group textarea:focus { outline: none; border-color: var(--cyan); }
   .form-group input::placeholder, .form-group textarea::placeholder { color: var(--dim); }
   .form-group select option { background: var(--surface2); }
-  .form-group textarea { min-height: 90px; resize: vertical; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+  .form-group textarea { min-height: 100px; resize: vertical; }
 
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.88rem;
+  }
+
+  .empty-state p { margin-bottom: 16px; }
+
+  /* ── Toast ── */
   .toast {
     position: fixed;
-    bottom: 32px;
-    right: 32px;
+    bottom: 28px;
+    right: 28px;
     background: var(--surface2);
     border: 1px solid var(--border2);
     border-radius: 6px;
-    padding: 14px 20px;
+    padding: 12px 18px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text);
     z-index: 2000;
     transform: translateY(80px);
     opacity: 0;
     transition: all 0.3s;
-    max-width: 360px;
+    max-width: 340px;
   }
 
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { border-left: 3px solid var(--green); }
-  .toast.error { border-left: 3px solid var(--red); }
-  .toast.info { border-left: 3px solid var(--cyan); }
+  .toast.error   { border-left: 3px solid var(--red); }
+  .toast.info    { border-left: 3px solid var(--cyan); }
 
+  /* ── Spinner ── */
   .spinner {
     display: inline-block;
-    width: 14px; height: 14px;
+    width: 13px; height: 13px;
     border: 2px solid var(--border2);
     border-top-color: var(--cyan);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     vertical-align: middle;
-    margin-right: 8px;
+    margin-right: 7px;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .empty-state {
-    background: var(--surface);
-    border: 1px dashed var(--border2);
-    border-radius: 8px;
-    padding: 48px;
-    text-align: center;
-    color: var(--dim);
-    font-size: 0.9rem;
-  }
-
-  .empty-state p { margin-bottom: 20px; }
-
-  .no-analysis {
-    background: var(--surface2);
-    border: 1px dashed var(--border);
-    border-radius: 6px;
-    padding: 20px;
-    text-align: center;
-    color: var(--dim);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    margin-bottom: 14px;
-  }
-
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--dim); }
 
   @media (max-width: 768px) {
     .summary-grid { grid-template-columns: 1fr; }
-    .positions-grid { grid-template-columns: 1fr; }
-    .header { flex-direction: column; gap: 20px; }
-    .header-actions { justify-content: flex-start; }
-    .header-left h1 { font-size: 2rem; }
+    .pos-top { grid-template-columns: 90px 1fr; grid-template-rows: auto auto; gap: 12px; }
+    .pos-price-block { text-align: left; }
+    .pos-rec-block { grid-column: 1 / -1; padding: 0; }
+    .pos-expand-btn { grid-column: 2; grid-row: 1; justify-self: end; }
+    .detail-grid { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-direction: column; gap: 16px; }
     .form-row { grid-template-columns: 1fr; }
-    .card-metrics { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
 <body>
-
 <div class="app">
+
+  <!-- Header -->
   <div class="header">
-    <div class="header-left">
+    <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-ghost" onclick="openAddModal('user')">+ MY PICK</button>
-      <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI PICK</button>
-      <button class="btn btn-primary" id="analyzeBtn" onclick="runDailyAnalysis()">⟳ RUN ANALYSIS</button>
+      <button class="btn btn-ghost" onclick="openAddModal('user')">+ My Pick</button>
+      <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI Pick</button>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="runDailyAnalysis()">⟳ Run Analysis</button>
     </div>
   </div>
 
+  <!-- Summary -->
   <div class="summary-grid">
     <div class="summary-card user">
-      <div class="summary-label"><span class="dot"></span>Your Positions</div>
-      <div class="summary-value" id="userValue">—</div>
-      <div class="summary-gain neutral" id="userGain">—</div>
-      <div class="summary-cost" id="userCost">—</div>
+      <div class="s-label"><span class="s-dot"></span>Your Positions</div>
+      <div class="s-value" id="userValue">—</div>
+      <div class="s-gain neutral" id="userGain">—</div>
+      <div class="s-cost" id="userCost">—</div>
     </div>
     <div class="summary-card ai">
-      <div class="summary-label"><span class="dot"></span>AI Suggested</div>
-      <div class="summary-value" id="aiValue">—</div>
-      <div class="summary-gain neutral" id="aiGain">—</div>
-      <div class="summary-cost" id="aiCost">—</div>
+      <div class="s-label"><span class="s-dot"></span>AI Suggested</div>
+      <div class="s-value" id="aiValue">—</div>
+      <div class="s-gain neutral" id="aiGain">—</div>
+      <div class="s-cost" id="aiCost">—</div>
     </div>
     <div class="summary-card combined">
-      <div class="summary-label"><span class="dot"></span>Combined Portfolio</div>
-      <div class="summary-value" id="combinedValue">—</div>
-      <div class="summary-gain neutral" id="combinedGain">—</div>
-      <div class="summary-cost" id="combinedCost">—</div>
+      <div class="s-label"><span class="s-dot"></span>Combined Portfolio</div>
+      <div class="s-value" id="combinedValue">—</div>
+      <div class="s-gain neutral" id="combinedGain">—</div>
+      <div class="s-cost" id="combinedCost">—</div>
     </div>
   </div>
 
   <div class="last-updated" id="lastUpdated">Not yet updated today — click Run Analysis</div>
 
+  <!-- Your Positions -->
   <div class="positions-section">
     <div class="section-header">
       <div class="section-title">
         YOUR POSITIONS
-        <span class="section-badge badge-user" id="userCount">0</span>
+        <span class="s-badge badge-user" id="userCount">0</span>
       </div>
     </div>
-    <div class="positions-grid" id="userPositions">
-      <div class="empty-state">
-        <p>No positions yet.</p>
+    <div class="positions-list" id="userPositions">
+      <div class="empty-state"><p>No positions yet.</p>
         <button class="btn btn-outline btn-sm" onclick="openAddModal('user')">+ Add Your First Pick</button>
       </div>
     </div>
   </div>
 
+  <!-- AI Suggested -->
   <div class="positions-section">
     <div class="section-header">
       <div class="section-title">
         AI SUGGESTED
-        <span class="section-badge badge-ai" id="aiCount">0</span>
+        <span class="s-badge badge-ai" id="aiCount">0</span>
       </div>
     </div>
-    <div class="positions-grid" id="aiPositions">
-      <div class="empty-state">
-        <p>No AI suggestions yet.</p>
+    <div class="positions-list" id="aiPositions">
+      <div class="empty-state"><p>No AI suggestions yet.</p>
         <button class="btn btn-outline btn-sm" onclick="openAddModal('ai-suggested')">+ Add AI Suggestion</button>
       </div>
     </div>
   </div>
+
 </div>
 
+<!-- Add Modal -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <h2 id="modalTitle">Add Position</h2>
@@ -623,7 +663,7 @@
   </div>
 </div>
 
-<!-- Edit Position Modal -->
+<!-- Edit Modal -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <h2>Edit Position</h2>
@@ -644,7 +684,7 @@
     </div>
     <div class="form-group">
       <label>Investment Thesis</label>
-      <textarea id="eThesis" style="min-height:160px;"></textarea>
+      <textarea id="eThesis" style="min-height:180px;"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
@@ -659,38 +699,31 @@
 const WORKER_URL = 'https://grasse-apps-proxy.ed-53c.workers.dev';
 const APP_ID = 'stocks';
 
-// ============================================================
-// PRE-LOADED POSITION DATA — verified May 28, 2026
-// Thesis, targets, and buy/sell levels based on current data
-// ============================================================
+// Seed data — verified May 28 2026
 const SEED_POSITIONS = {
   'MRVL': {
-    targetprice: 260,
-    risklevel: 'medium',
-    thesis: 'Custom AI silicon dominant play. Q1 FY2027 earnings beat May 27 — raised FY2027 revenue to $11.5B (+40% YoY). Demand broadening across custom silicon, interconnect and switching. Amazon Trainium, Microsoft Maia, Google Axion design wins. Multiple analysts raised targets today (BofA $240, KeyBanc $260, Benchmark $275). Margin expansion from high 20s toward 30s as AI mix grows. Buy more below $185. Take 25% profits above $280. Exit if custom ASIC wins slow or revenue guidance cut below 35% growth.'
+    targetprice: 260, risklevel: 'medium',
+    thesis: 'Custom AI silicon dominant play. Q1 FY2027 earnings beat May 27 — raised FY2027 revenue to $11.5B (+40% YoY). Demand broadening across custom silicon, interconnect and switching. Amazon Trainium, Microsoft Maia, Google Axion design wins. Multiple analysts raised targets May 28 (BofA $240, KeyBanc $260, Benchmark $275, Oppenheimer $250). Margin expansion from high 20s toward 30s as AI mix grows. Buy more below $185. Take 25% profits above $280. Exit if custom ASIC wins slow or revenue guidance cut below 35% growth.'
   },
   'CRDO': {
-    targetprice: 300,
-    risklevel: 'medium',
-    thesis: 'Active electrical cables (AECs) solving power and density problems in AI data centers. Q3 FY2026 showed 201.5% YoY revenue growth and 328% YoY EPS growth. DustPhotonics acquisition expands TAM in optical and AEC for hyperscalers. Three 10%+ customers diversifying revenue base. $1.3B cash position. Q4 earnings June 1 is next major catalyst — beat expected. Buy more below $190 post-earnings on any volatility. Take 25% profits above $270. Exit if revenue growth drops below 100% YoY or hyperscaler customers pull back.'
+    targetprice: 300, risklevel: 'medium',
+    thesis: 'Active electrical cables (AECs) solving power and density problems in AI data centers. Q3 FY2026 showed 201.5% YoY revenue growth and 328% YoY EPS growth. DustPhotonics acquisition expands TAM in optical and AEC for hyperscalers. Three 10%+ customers diversifying revenue base. $1.3B cash position. Q4 earnings June 1 is next major catalyst. Buy more below $190 post-earnings on any volatility. Take 25% profits above $270. Exit if revenue growth drops below 100% YoY or hyperscaler customers pull back.'
   },
   'ALAB': {
-    targetprice: 380,
-    risklevel: 'high',
-    thesis: 'Fastest growing connectivity infrastructure play. Q1 2026 revenue $308M up 93.5% YoY, EPS $0.61 vs $0.54 estimate. Q2 guidance $355-365M vs consensus $310M — massive beat. Scorpio X-Series 320-lane AI fabric switch driving hyperscaler adoption. PCIe 6 solutions growing. Computex 2026 showcase June 2-5 is next catalyst. Evercore ISI target $297. Note: median analyst target implies some downside — high conviction growth bet, not a value play. Buy more below $280. Take 25% profits above $370. Exit if revenue growth drops below 70% or Scorpio switch loses traction.'
+    targetprice: 380, risklevel: 'high',
+    thesis: 'Fastest growing connectivity infrastructure play. Q1 2026 revenue $308M up 93.5% YoY, EPS $0.61 vs $0.54 estimate. Q2 guidance $355-365M vs consensus $310M — massive beat. Scorpio X-Series 320-lane AI fabric switch driving hyperscaler adoption. Computex 2026 showcase June 2-5 is next catalyst. Buy more below $280. Take 25% profits above $370. Exit if revenue growth drops below 70% or Scorpio switch loses traction.'
   },
   'AAOI': {
-    targetprice: 250,
-    risklevel: 'high',
-    thesis: 'Optical transceiver supplier for AI data centers. 2026 revenue guidance over $1B driven by 800G and 1.6T product ramps. Secured significant hyperscale orders and $20.9M Texas grant for expansion. Cheaper entry than LITE or COHR. WARNING: Q1 EPS missed at -7c vs -5c consensus, Q2 guidance below expectations. Executives sold large blocks of shares in May — insider selling is a red flag. Monitor closely. Buy more below $160. Take 25% profits above $230. Exit if insider selling continues or 800G ramp delays materialize.'
+    targetprice: 250, risklevel: 'high',
+    thesis: 'Optical transceiver supplier for AI data centers. 2026 revenue guidance over $1B driven by 800G and 1.6T product ramps. Secured significant hyperscale orders and $20.9M Texas grant for expansion. WARNING: Q1 EPS missed, Q2 guidance below expectations. Executives sold large blocks of shares in May — monitor insider selling closely. Buy more below $160. Take 25% profits above $230. Exit if insider selling continues or 800G ramp delays materialize.'
   },
   'AMAT': {
-    targetprice: 550,
-    risklevel: 'low',
-    thesis: 'Semiconductor equipment maker riding the AI capex wave. Picks and shovels play — every chip fab needs AMAT equipment regardless of which AI chip wins. BofA lists as key beneficiary of semiconductor boom. Most conservative position in the portfolio — the ballast that stabilizes against growth stock volatility. Analyst consensus target $470 with upside to $550 on continued capex cycle. Buy more below $400 on any semis correction. Take 25% profits above $560. Exit if semiconductor capex cycle turns down or China export restrictions materially impact revenue.'
+    targetprice: 550, risklevel: 'low',
+    thesis: 'Semiconductor equipment maker riding the AI capex wave. Picks and shovels play — every chip fab needs AMAT equipment. BofA lists as key beneficiary of semiconductor boom. Analyst consensus $470, upside to $550 on continued capex cycle. Portfolio ballast. Buy more below $400. Take 25% profits above $560. Exit if capex cycle turns or China export restrictions materially impact revenue.'
   }
 };
 
+// ── Worker helpers ──
 async function workerCall(payload) {
   const r = await fetch(WORKER_URL, {
     method: 'POST',
@@ -701,9 +734,10 @@ async function workerCall(payload) {
   return r.json();
 }
 
-async function sbGet(table, filters)    { return workerCall({ method: 'SELECT', table, filters: filters || '' }); }
-async function sbInsert(table, row)     { return workerCall({ method: 'INSERT', table, data: row }); }
-async function sbDelete(table, id)      { return workerCall({ method: 'DELETE', table, idField: 'id', idValue: id }); }
+async function sbGet(table, filters)       { return workerCall({ method: 'SELECT', table, filters: filters || '' }); }
+async function sbInsert(table, row)        { return workerCall({ method: 'INSERT', table, data: row }); }
+async function sbUpdate(table, id, row)    { return workerCall({ method: 'UPDATE', table, idField: 'id', idValue: id, data: row }); }
+async function sbDelete(table, id)         { return workerCall({ method: 'DELETE', table, idField: 'id', idValue: id }); }
 
 async function claudeCall(claudeMethod, extra) {
   const r = await fetch(WORKER_URL, {
@@ -715,10 +749,12 @@ async function claudeCall(claudeMethod, extra) {
   return r.json();
 }
 
-let positions = [];
+// ── State ──
+let positions  = [];
 let analysisMap = {};
-let notesMap = {};
+let notesMap    = {};
 
+// ── Init ──
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('headerDate').textContent =
     new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
@@ -732,7 +768,7 @@ async function loadAll() {
     await loadNotes();
     renderAll();
   } catch (err) {
-    showToast('Failed to load data: ' + err.message, 'error');
+    showToast('Failed to load: ' + err.message, 'error');
   }
 }
 
@@ -760,6 +796,7 @@ async function loadNotes() {
   });
 }
 
+// ── Render ──
 function renderAll() {
   renderSummary();
   renderPositions('user', 'userPositions');
@@ -783,148 +820,189 @@ function renderSummary() {
 
   const u = calcTotals(userPos);
   const a = calcTotals(aiPos);
-  const c = {
-    value: u.value + a.value,
-    cost: u.cost + a.cost,
-    gain: u.gain + a.gain,
-    pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0
-  };
+  const c = { value: u.value + a.value, cost: u.cost + a.cost, gain: u.gain + a.gain,
+    pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0 };
 
-  setSummaryCard('user', u);
-  setSummaryCard('ai', a);
-  setSummaryCard('combined', c);
+  setSummary('user', u);
+  setSummary('ai', a);
+  setSummary('combined', c);
 
   document.getElementById('userCount').textContent = userPos.length;
   document.getElementById('aiCount').textContent   = aiPos.length;
 }
 
-function setSummaryCard(type, m) {
-  const prefix = type === 'combined' ? 'combined' : type === 'user' ? 'user' : 'ai';
-  const valEl  = document.getElementById(prefix + 'Value');
-  const gainEl = document.getElementById(prefix + 'Gain');
-  const costEl = document.getElementById(prefix + 'Cost');
-  valEl.textContent  = '$' + fmt(m.value);
-  costEl.textContent = 'Cost basis: $' + fmt(m.cost);
+function setSummary(type, m) {
+  const p = type === 'combined' ? 'combined' : type === 'user' ? 'user' : 'ai';
+  document.getElementById(p + 'Value').textContent = '$' + fmt(m.value);
+  document.getElementById(p + 'Cost').textContent  = 'Cost basis: $' + fmt(m.cost);
   const sign = m.gain >= 0 ? '+' : '';
+  const gainEl = document.getElementById(p + 'Gain');
   gainEl.textContent = `${sign}$${fmt(Math.abs(m.gain))}  (${sign}${m.pct.toFixed(2)}%)`;
-  gainEl.className   = 'summary-gain ' + (m.cost === 0 ? 'neutral' : m.gain >= 0 ? 'pos' : 'neg');
+  gainEl.className   = 's-gain ' + (m.cost === 0 ? 'neutral' : m.gain >= 0 ? 'pos' : 'neg');
 }
 
 function renderPositions(type, containerId) {
   const container = document.getElementById(containerId);
   const filtered  = positions.filter(p => p.positiontype === type);
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state">
-      <p>No ${type === 'user' ? 'positions' : 'AI suggestions'} yet.</p>
-      <button class="btn btn-outline btn-sm" onclick="openAddModal('${type}')">+ Add ${type === 'user' ? 'Your Pick' : 'AI Suggestion'}</button>
-    </div>`;
+    const label = type === 'user' ? 'Your Pick' : 'AI Suggestion';
+    container.innerHTML = `<div class="empty-state"><p>No ${type === 'user' ? 'positions' : 'AI suggestions'} yet.</p>
+      <button class="btn btn-outline btn-sm" onclick="openAddModal('${type}')">+ Add ${label}</button></div>`;
     return;
   }
   container.innerHTML = filtered.map(p => buildCard(p)).join('');
 }
 
+// ── Build Card ──
 function buildCard(p) {
-  const a      = analysisMap[p.id];
-  const notes  = notesMap[p.id] || [];
-  const price  = a ? parseFloat(a.currentprice) : parseFloat(p.entryprice);
-  const value  = price * parseInt(p.shares);
-  const cost   = parseFloat(p.entryprice) * parseInt(p.shares);
-  const gain   = value - cost;
-  const gainPct= cost > 0 ? (gain / cost * 100) : 0;
-  const upside = parseFloat(p.targetprice) > 0
+  const a       = analysisMap[p.id];
+  const notes   = notesMap[p.id] || [];
+  const price   = a ? parseFloat(a.currentprice) : parseFloat(p.entryprice);
+  const value   = price * parseInt(p.shares);
+  const cost    = parseFloat(p.entryprice) * parseInt(p.shares);
+  const gain    = value - cost;
+  const gainPct = cost > 0 ? (gain / cost * 100) : 0;
+  const upside  = parseFloat(p.targetprice) > 0
     ? (((parseFloat(p.targetprice) - parseFloat(p.entryprice)) / parseFloat(p.entryprice)) * 100).toFixed(0)
     : '—';
 
   const gainClass = gain >= 0 ? 'pos' : 'neg';
   const gainSign  = gain >= 0 ? '+' : '';
 
-  const analysisHTML = a ? `
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <span class="analysis-date">${a.analysisdate || ''}</span>
-        <span class="thesis-status status-${a.thesisstatus || 'on-track'}">${(a.thesisstatus || 'on-track').replace('-', ' ')}</span>
-      </div>
-      <div class="analysis-comparison">${a.thesiscomparison || ''}</div>
-      <div class="recommendation-block">
-        <div class="recommendation-label">Recommendation</div>
-        <div class="recommendation-text">${a.recommendation || ''}</div>
-      </div>
-      ${a.ainotes ? `<div class="analysis-comparison" style="color:var(--dim);font-size:0.78rem;">${a.ainotes}</div>` : ''}
-      <div class="signal-row">
-        ${a.buysignal  ? '<span class="signal-pill signal-buy">▲ BUY SIGNAL</span>'  : ''}
-        ${a.sellsignal ? '<span class="signal-pill signal-sell">▼ SELL SIGNAL</span>' : ''}
-        ${!a.buysignal && !a.sellsignal ? '<span class="signal-pill signal-hold">● HOLD</span>' : ''}
-      </div>
-    </div>` : `<div class="no-analysis">No analysis yet — click Run Analysis</div>`;
+  // ── Recommendation block (from latest analysis) ──
+  let recPillClass = 'rec-none';
+  let recPillText  = 'No Analysis Yet';
+  let recBullets   = ['Run Analysis to generate AI recommendations for this position'];
 
-  const notesHTML = notes.slice(0, 3).map(n => `
+  if (a && a.recommendation) {
+    const rec = a.recommendation.toLowerCase();
+    if (a.sellsignal)       { recPillClass = 'rec-sell';  recPillText = '▼ Sell Signal'; }
+    else if (a.buysignal)   { recPillClass = 'rec-buy';   recPillText = '▲ Buy Signal'; }
+    else if (rec.includes('watch') || rec.includes('monitor')) { recPillClass = 'rec-watch'; recPillText = '◉ Watch'; }
+    else                    { recPillClass = 'rec-hold';  recPillText = '● Hold'; }
+
+    // Extract 2-3 bullet points from recommendation + aiNotes
+    const fullText = (a.recommendation || '') + ' ' + (a.ainotes || '');
+    recBullets = extractBullets(fullText, a.thesiscomparison || '');
+  }
+
+  const bulletHTML = recBullets.map(b => `<li>${b}</li>`).join('');
+
+  // ── Detail section ──
+  const thesisStatusBadge = a
+    ? `<span class="thesis-status status-${a.thesisstatus || 'on-track'}">${(a.thesisstatus || 'on-track').replace('-', ' ')}</span>`
+    : '';
+
+  const notesHTML = notes.slice(0, 5).map(n => `
     <div class="note-item">
       <div class="note-date">${n.notedate || ''}</div>
       ${n.note}
-    </div>`).join('');
+    </div>`).join('') || '<div style="color:var(--dim);font-size:0.82rem;margin-bottom:8px;">No notes yet.</div>';
 
   return `
-  <div class="position-card" id="card-${p.id}">
-    <div class="card-header">
-      <div>
-        <div class="card-symbol">${p.symbol}</div>
-        <div class="card-name">${parseInt(p.shares)} SHARES · ENTRY $${parseFloat(p.entryprice).toFixed(2)}</div>
+<div class="pos-card" id="card-${p.id}">
+  <div class="pos-top" onclick="toggleCard('${p.id}')">
+    <div>
+      <div class="pos-symbol">${p.symbol}</div>
+      <div class="pos-meta">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} entry</div>
+    </div>
+    <div class="pos-rec-block">
+      <div class="rec-pill ${recPillClass}">${recPillText}</div>
+      <ul class="rec-bullets">${bulletHTML}</ul>
+    </div>
+    <div class="pos-price-block">
+      <div class="pos-price">$${price.toFixed(2)}</div>
+      <div class="pos-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
+    </div>
+    <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
+  </div>
+
+  <div class="pos-detail" id="detail-${p.id}">
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <div class="detail-label">Current Value</div>
+        <div class="detail-value">$${fmt(value)}</div>
       </div>
-      <div class="card-price-block">
-        <div class="card-current-price">$${price.toFixed(2)}</div>
-        <div class="card-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
+      <div class="detail-cell">
+        <div class="detail-label">Cost Basis</div>
+        <div class="detail-value">$${fmt(cost)}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-label">Target</div>
+        <div class="detail-value" style="color:var(--purple)">$${parseFloat(p.targetprice).toFixed(2)}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-label">Upside</div>
+        <div class="detail-value" style="color:var(--purple)">${upside}%</div>
       </div>
     </div>
-    <div class="card-metrics">
-      <div class="metric-cell">
-        <div class="metric-label">Value</div>
-        <div class="metric-value">$${fmt(value)}</div>
+
+    <div class="detail-body">
+
+      ${a ? `
+      <div class="detail-section">
+        <div class="detail-section-label">AI Analysis
+          <span style="float:right">${thesisStatusBadge} <span class="analysis-date">${a.analysisdate || ''}</span></span>
+        </div>
+        <div class="detail-text">${a.thesiscomparison || ''}</div>
+        ${a.ainotes ? `<div class="detail-text" style="margin-top:10px;color:var(--dim);">${a.ainotes}</div>` : ''}
+      </div>` : ''}
+
+      <div class="detail-section">
+        <div class="detail-section-label">Investment Thesis</div>
+        <div class="detail-text">${p.thesis}</div>
       </div>
-      <div class="metric-cell">
-        <div class="metric-label">Cost</div>
-        <div class="metric-value">$${fmt(cost)}</div>
-      </div>
-      <div class="metric-cell">
-        <div class="metric-label">Target</div>
-        <div class="metric-value" style="color:var(--purple)">$${parseFloat(p.targetprice).toFixed(2)}</div>
-      </div>
-      <div class="metric-cell">
-        <div class="metric-label">Upside</div>
-        <div class="metric-value" style="color:var(--purple)">${upside}%</div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="thesis-label">Investment Thesis</div>
-      <div class="thesis-text">${p.thesis}</div>
-      ${analysisHTML}
-      <div class="notes-section">
-        <div class="thesis-label">Notes</div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Notes</div>
         ${notesHTML}
         <div class="add-note-row">
           <input type="text" id="note-${p.id}" placeholder="Add a note..." onkeydown="if(event.key==='Enter') addNote('${p.id}')">
           <button class="btn btn-outline btn-sm" onclick="addNote('${p.id}')">Add</button>
         </div>
       </div>
+
     </div>
-    <div class="card-footer">
+
+    <div class="pos-footer">
       <span class="risk-badge risk-${p.risklevel}">${p.risklevel} risk</span>
-      <span class="target-info">Target <span>$${parseFloat(p.targetprice).toFixed(2)}</span> · ${upside}% upside</span>
+      <span class="target-info" style="margin-left:10px;">Target <span>$${parseFloat(p.targetprice).toFixed(2)}</span></span>
+      <span class="footer-spacer"></span>
       <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Edit</button>
       <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
     </div>
-  </div>`;
+  </div>
+</div>`;
 }
 
-// Auto-fill thesis and target when symbol is typed
-function autofillPosition(symbol) {
-  const seed = SEED_POSITIONS[symbol.toUpperCase()];
-  if (seed) {
-    document.getElementById('fTarget').value = seed.targetprice;
-    document.getElementById('fRisk').value   = seed.risklevel;
-    document.getElementById('fThesis').value = seed.thesis;
-  }
+// Extract 2-3 concise bullets from AI text
+function extractBullets(recText, compText) {
+  const combined = (recText + ' ' + compText).trim();
+  if (!combined || combined.length < 10) return ['No details available'];
+
+  // Split on sentence boundaries and pick the 2-3 most meaningful ones
+  const sentences = combined
+    .replace(/([.!?])\s+/g, '$1|')
+    .split('|')
+    .map(s => s.trim())
+    .filter(s => s.length > 20 && s.length < 160);
+
+  if (!sentences.length) return [combined.substring(0, 120)];
+
+  // Pick up to 3 sentences
+  return sentences.slice(0, 3);
 }
 
+// ── Toggle Card Expand ──
+function toggleCard(id) {
+  const detail = document.getElementById('detail-' + id);
+  const btn    = document.getElementById('expand-' + id);
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+// ── Add Note ──
 async function addNote(positionId) {
   const input = document.getElementById('note-' + positionId);
   const note  = input.value.trim();
@@ -941,6 +1019,7 @@ async function addNote(positionId) {
   }
 }
 
+// ── Delete Position ──
 async function deletePosition(id) {
   if (!confirm('Remove this position? This will also delete all analysis and notes for it.')) return;
   try {
@@ -951,10 +1030,11 @@ async function deletePosition(id) {
     renderAll();
     showToast('Position removed', 'success');
   } catch (err) {
-    showToast('Failed to remove position: ' + err.message, 'error');
+    showToast('Failed to remove: ' + err.message, 'error');
   }
 }
 
+// ── Add Modal ──
 function openAddModal(type) {
   document.getElementById('modalType').value = type;
   document.getElementById('modalTitle').textContent = type === 'user' ? 'Add Your Pick' : 'Add AI Suggestion';
@@ -963,10 +1043,17 @@ function openAddModal(type) {
 
 function closeModal() {
   document.getElementById('addModal').classList.remove('show');
-  ['fSymbol','fShares','fEntry','fTarget','fThesis'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+  ['fSymbol','fShares','fEntry','fTarget','fThesis'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fRisk').value = 'medium';
+}
+
+function autofillPosition(symbol) {
+  const seed = SEED_POSITIONS[symbol];
+  if (seed) {
+    document.getElementById('fTarget').value = seed.targetprice;
+    document.getElementById('fRisk').value   = seed.risklevel;
+    document.getElementById('fThesis').value = seed.thesis;
+  }
 }
 
 async function savePosition() {
@@ -987,123 +1074,16 @@ async function savePosition() {
       symbol, shares, entryprice: entry, targetprice: target,
       risklevel: risk, thesis, positiontype: type
     });
-    const newPos = Array.isArray(result) ? result[0] : result;
-    positions.push(newPos);
+    positions.push(Array.isArray(result) ? result[0] : result);
     closeModal();
     renderAll();
-    showToast(`${symbol} added successfully`, 'success');
+    showToast(`${symbol} added`, 'success');
   } catch (err) {
     showToast('Failed to save: ' + err.message, 'error');
   }
 }
 
-async function runDailyAnalysis() {
-  if (!positions.length) { showToast('No positions to analyze', 'info'); return; }
-
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>ANALYZING...';
-  showToast('Fetching prices and running AI analysis...', 'info');
-
-  try {
-    const posData = positions.map(p => ({
-      id: p.id,
-      symbol: p.symbol,
-      shares: parseInt(p.shares),
-      entryPrice: parseFloat(p.entryprice),
-      targetPrice: parseFloat(p.targetprice),
-      riskLevel: p.risklevel,
-      thesis: p.thesis,
-      positionType: p.positiontype
-    }));
-
-    const result = await claudeCall('stocksAnalysis', {
-      positions: posData,
-      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations. Use current market context. Do not recommend selling just because price is near target — reassess target against current growth trajectory.'
-    });
-
-    if (result.error) throw new Error(result.error);
-
-    const analysisArray = result.analysis || [];
-
-    for (const a of analysisArray) {
-      const pos = positions.find(p => p.symbol === a.symbol);
-      if (!pos) continue;
-
-      const row = {
-        position_id:      pos.id,
-        analysisdate:     today(),
-        currentprice:     a.currentPrice || parseFloat(pos.entryprice),
-        currentvalue:     a.currentValue || (a.currentPrice * parseInt(pos.shares)),
-        unrealizedgain:   a.unrealizedGain || 0,
-        gainpercent:      a.gainPercent || 0,
-        thesisstatus:     a.thesisStatus || 'on-track',
-        thesiscomparison: a.thesisComparison || '',
-        buysignal:        a.buySignal || false,
-        sellsignal:       a.sellSignal || false,
-        recommendation:   a.recommendation || '',
-        ainotes:          a.aiNotes || ''
-      };
-
-      const saved = await sbInsert('StocksAnalysis', row);
-      const savedRow = Array.isArray(saved) ? saved[0] : saved;
-      analysisMap[pos.id] = savedRow;
-    }
-
-    const userPos = positions.filter(p => p.positiontype === 'user');
-    const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
-
-    const calcTot = (arr) => {
-      let value = 0, cost = 0;
-      arr.forEach(p => {
-        const a2 = analysisMap[p.id];
-        const price = a2 ? parseFloat(a2.currentprice) : parseFloat(p.entryprice);
-        value += price * parseInt(p.shares);
-        cost  += parseFloat(p.entryprice) * parseInt(p.shares);
-      });
-      return { value, cost };
-    };
-
-    const u = calcTot(userPos);
-    const ai = calcTot(aiPos);
-
-    await sbInsert('StocksPortfolioSummary', {
-      summarydate:        today(),
-      usertotalvalue:     u.value,
-      usertotalcost:      u.cost,
-      usertotalgain:      u.value - u.cost,
-      usergainpercent:    u.cost > 0 ? ((u.value - u.cost) / u.cost * 100) : 0,
-      aitotalvalue:       ai.value,
-      aitotalcost:        ai.cost,
-      aitotalgain:        ai.value - ai.cost,
-      aigainpercent:      ai.cost > 0 ? ((ai.value - ai.cost) / ai.cost * 100) : 0,
-      combinedtotalvalue: u.value + ai.value
-    });
-
-    document.getElementById('lastUpdated').textContent =
-      'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    renderAll();
-    showToast('Analysis complete — all positions updated', 'success');
-
-  } catch (err) {
-    showToast('Analysis failed: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '⟳ RUN ANALYSIS';
-  }
-}
-
-function fmt(n) {
-  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
-
-async function sbUpdate(table, id, row) { return workerCall({ method: 'UPDATE', table, idField: 'id', idValue: id, data: row }); }
-
+// ── Edit Modal ──
 function openEditModal(id) {
   const pos = positions.find(p => p.id === id);
   if (!pos) return;
@@ -1114,18 +1094,14 @@ function openEditModal(id) {
   document.getElementById('editModal').classList.add('show');
 }
 
-function closeEditModal() {
-  document.getElementById('editModal').classList.remove('show');
-}
+function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
 
 async function saveEdit() {
   const id     = document.getElementById('eId').value;
   const target = parseFloat(document.getElementById('eTarget').value);
   const risk   = document.getElementById('eRisk').value;
   const thesis = document.getElementById('eThesis').value.trim();
-
   if (!target || !thesis) { showToast('Target price and thesis are required', 'error'); return; }
-
   try {
     await sbUpdate('StocksPositions', id, { targetprice: target, risklevel: risk, thesis, updated_at: new Date().toISOString() });
     const pos = positions.find(p => p.id === id);
@@ -1138,20 +1114,104 @@ async function saveEdit() {
   }
 }
 
+// ── Run Daily Analysis ──
+async function runDailyAnalysis() {
+  if (!positions.length) { showToast('No positions to analyze', 'info'); return; }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing...';
+  showToast('Fetching prices and running AI analysis...', 'info');
+
+  try {
+    const posData = positions.map(p => ({
+      id: p.id, symbol: p.symbol,
+      shares: parseInt(p.shares),
+      entryPrice: parseFloat(p.entryprice),
+      targetPrice: parseFloat(p.targetprice),
+      riskLevel: p.risklevel,
+      thesis: p.thesis,
+      positionType: p.positiontype
+    }));
+
+    const result = await claudeCall('stocksAnalysis', {
+      positions: posData,
+      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus.'
+    });
+
+    if (result.error) throw new Error(result.error);
+
+    for (const a of (result.analysis || [])) {
+      const pos = positions.find(p => p.symbol === a.symbol);
+      if (!pos) continue;
+      const saved = await sbInsert('StocksAnalysis', {
+        position_id: pos.id, analysisdate: today(),
+        currentprice: a.currentPrice || parseFloat(pos.entryprice),
+        currentvalue: a.currentValue || 0,
+        unrealizedgain: a.unrealizedGain || 0,
+        gainpercent: a.gainPercent || 0,
+        thesisstatus: a.thesisStatus || 'on-track',
+        thesiscomparison: a.thesisComparison || '',
+        buysignal: a.buySignal || false,
+        sellsignal: a.sellSignal || false,
+        recommendation: a.recommendation || '',
+        ainotes: a.aiNotes || ''
+      });
+      analysisMap[pos.id] = Array.isArray(saved) ? saved[0] : saved;
+    }
+
+    const calcTot = (arr) => {
+      let value = 0, cost = 0;
+      arr.forEach(p => {
+        const a2 = analysisMap[p.id];
+        const price = a2 ? parseFloat(a2.currentprice) : parseFloat(p.entryprice);
+        value += price * parseInt(p.shares);
+        cost  += parseFloat(p.entryprice) * parseInt(p.shares);
+      });
+      return { value, cost };
+    };
+
+    const u  = calcTot(positions.filter(p => p.positiontype === 'user'));
+    const ai = calcTot(positions.filter(p => p.positiontype === 'ai-suggested'));
+
+    await sbInsert('StocksPortfolioSummary', {
+      summarydate: today(),
+      usertotalvalue: u.value, usertotalcost: u.cost,
+      usertotalgain: u.value - u.cost,
+      usergainpercent: u.cost > 0 ? ((u.value - u.cost) / u.cost * 100) : 0,
+      aitotalvalue: ai.value, aitotalcost: ai.cost,
+      aitotalgain: ai.value - ai.cost,
+      aigainpercent: ai.cost > 0 ? ((ai.value - ai.cost) / ai.cost * 100) : 0,
+      combinedtotalvalue: u.value + ai.value
+    });
+
+    document.getElementById('lastUpdated').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    renderAll();
+    showToast('Analysis complete', 'success');
+
+  } catch (err) {
+    showToast('Analysis failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⟳ Run Analysis';
+  }
+}
+
+// ── Utilities ──
+function fmt(n) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function today() { return new Date().toISOString().split('T')[0]; }
+
 function showToast(msg, type = 'info') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = `toast ${type} show`;
-  setTimeout(() => { t.classList.remove('show'); }, 4000);
+  setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-document.getElementById('addModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEditModal();
-});
+document.getElementById('addModal').addEventListener('click',  function(e) { if (e.target === this) closeModal(); });
+document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 </script>
 </body>
 </html>
