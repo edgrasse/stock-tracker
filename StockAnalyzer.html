@@ -499,6 +499,31 @@
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 
+  /* Lots */
+  .lots-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; cursor: pointer; user-select: none; }
+  .lots-toggle input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--cyan); cursor: pointer; }
+  .lots-toggle label { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; }
+
+  .lots-section { display: none; border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 16px; background: var(--surface2); }
+  .lots-section.show { display: block; }
+
+  .lot-row { display: grid; grid-template-columns: 1fr 80px 90px 32px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .lot-row input { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 7px 10px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.75rem; width: 100%; }
+  .lot-row input:focus { outline: none; border-color: var(--cyan); }
+  .lot-remove { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 1rem; padding: 4px; transition: color 0.2s; }
+  .lot-remove:hover { color: var(--red); }
+  .lot-header { display: grid; grid-template-columns: 1fr 80px 90px 32px; gap: 8px; margin-bottom: 6px; }
+  .lot-header span { font-family: 'Space Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); }
+  .lot-summary { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .lot-summary span { color: var(--cyan); }
+
+  /* Lots table in card detail */
+  .lots-table { width: 100%; border-collapse: collapse; font-family: 'Space Mono', monospace; font-size: 0.72rem; }
+  .lots-table th { text-align: left; color: var(--dim); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .lots-table td { padding: 8px 10px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .lots-table tr:last-child td { border-bottom: none; }
+  .lots-table .lot-total td { color: var(--text); font-weight: 700; border-top: 1px solid var(--border2); }
+
   /* ── Empty state ── */
   .empty-state {
     background: var(--surface);
@@ -644,38 +669,78 @@
   <div class="modal">
     <h2 id="modalTitle">Add Position</h2>
     <input type="hidden" id="modalType" value="user">
+
     <div class="form-row">
       <div class="form-group">
         <label>Symbol</label>
         <input type="text" id="fSymbol" placeholder="e.g. MRVL" oninput="this.value=this.value.toUpperCase(); autofillPosition(this.value)">
       </div>
       <div class="form-group">
-        <label>Shares</label>
-        <input type="number" id="fShares" placeholder="0" min="1">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Entry Price ($)</label>
-        <input type="number" id="fEntry" placeholder="0.00" step="0.01">
-      </div>
-      <div class="form-group">
         <label>Target Price ($)</label>
         <input type="number" id="fTarget" placeholder="0.00" step="0.01">
       </div>
     </div>
-    <div class="form-group">
-      <label>Risk Level</label>
-      <select id="fRisk">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-      </select>
+
+    <!-- Single lot fields (shown when Multiple Lots is unchecked) -->
+    <div id="singleLotFields">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Purchase Date</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="form-group">
+          <label>Shares</label>
+          <input type="number" id="fShares" placeholder="0" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Entry Price ($)</label>
+          <input type="number" id="fEntry" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Risk Level</label>
+          <select id="fRisk">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
     </div>
+
+    <!-- Multiple lots toggle -->
+    <div class="lots-toggle">
+      <input type="checkbox" id="fMultipleLots" onchange="toggleMultipleLots()">
+      <label for="fMultipleLots">Multiple Lots (different dates / prices)</label>
+    </div>
+
+    <!-- Multiple lots section (hidden by default) -->
+    <div class="lots-section" id="lotsSection">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Risk Level</label>
+        <select id="fRiskLots">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <div class="lot-header">
+        <span>Date Purchased</span>
+        <span>Shares</span>
+        <span>Price / Share</span>
+        <span></span>
+      </div>
+      <div id="lotRows"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addLotRow()" style="margin-top:4px;">+ Add Lot</button>
+      <div class="lot-summary" id="lotSummary"></div>
+    </div>
+
     <div class="form-group">
       <label>Investment Thesis</label>
       <textarea id="fThesis" placeholder="Why are you buying this?"></textarea>
     </div>
+
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="savePosition()">Save Position</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -924,7 +989,7 @@ function buildCard(p) {
   <div class="pos-top" onclick="toggleCard('${p.id}')">
     <div>
       <div class="pos-symbol">${p.symbol}</div>
-      <div class="pos-meta">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} entry</div>
+      <div class="pos-meta">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg entry${p.purchasedate ? ' · ' + p.purchasedate : ''}</div>
     </div>
     <div class="pos-rec-block">
       <div class="rec-pill ${recPillClass}">${recPillText}</div>
@@ -972,6 +1037,38 @@ function buildCard(p) {
         <div class="detail-section-label">Investment Thesis</div>
         <div class="detail-text">${p.thesis}</div>
       </div>
+
+      ${(() => {
+        let lotsData = [];
+        try { lotsData = JSON.parse(p.lots || '[]'); } catch(e) {}
+        if (!lotsData.length) return '';
+        const lotsRows = lotsData.map(l => `
+          <tr>
+            <td>${l.date || '—'}</td>
+            <td>${l.shares}</td>
+            <td>$${parseFloat(l.price).toFixed(2)}</td>
+            <td>$${(l.shares * l.price).toFixed(2)}</td>
+          </tr>`).join('');
+        const totalShares = lotsData.reduce((s,l) => s + l.shares, 0);
+        const totalCost   = lotsData.reduce((s,l) => s + l.shares * l.price, 0);
+        const avgPrice    = (totalCost / totalShares).toFixed(2);
+        return `
+        <div class="detail-section">
+          <div class="detail-section-label">Purchase Lots</div>
+          <table class="lots-table">
+            <thead><tr><th>Date</th><th>Shares</th><th>Price</th><th>Cost</th></tr></thead>
+            <tbody>
+              ${lotsRows}
+              <tr class="lot-total">
+                <td>Total / Avg</td>
+                <td>${totalShares}</td>
+                <td>$${avgPrice}</td>
+                <td>$${totalCost.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>`;
+      })()}
 
       <div class="detail-section">
         <div class="detail-section-label">Notes</div>
@@ -1063,8 +1160,71 @@ function openAddModal(type) {
 
 function closeModal() {
   document.getElementById('addModal').classList.remove('show');
-  ['fSymbol','fShares','fEntry','fTarget','fThesis'].forEach(id => document.getElementById(id).value = '');
+  ['fSymbol','fShares','fEntry','fTarget','fThesis','fDate'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fRisk').value = 'medium';
+  document.getElementById('fRiskLots').value = 'medium';
+  document.getElementById('fMultipleLots').checked = false;
+  document.getElementById('lotsSection').classList.remove('show');
+  document.getElementById('singleLotFields').style.display = '';
+  document.getElementById('lotRows').innerHTML = '';
+  document.getElementById('lotSummary').innerHTML = '';
+}
+
+function toggleMultipleLots() {
+  const checked = document.getElementById('fMultipleLots').checked;
+  document.getElementById('singleLotFields').style.display = checked ? 'none' : '';
+  document.getElementById('lotsSection').classList.toggle('show', checked);
+  if (checked && document.getElementById('lotRows').children.length === 0) {
+    addLotRow();
+    addLotRow();
+  }
+}
+
+function addLotRow() {
+  const container = document.getElementById('lotRows');
+  const idx = container.children.length;
+  const row = document.createElement('div');
+  row.className = 'lot-row';
+  row.id = 'lot-' + idx;
+  row.innerHTML = `
+    <input type="date" id="lot-date-${idx}">
+    <input type="number" id="lot-shares-${idx}" placeholder="0" min="1" oninput="updateLotSummary()">
+    <input type="number" id="lot-price-${idx}" placeholder="0.00" step="0.01" oninput="updateLotSummary()">
+    <button class="lot-remove" onclick="removeLotRow(${idx})">✕</button>`;
+  container.appendChild(row);
+  updateLotSummary();
+}
+
+function removeLotRow(idx) {
+  const row = document.getElementById('lot-' + idx);
+  if (row) row.remove();
+  updateLotSummary();
+}
+
+function updateLotSummary() {
+  const container = document.getElementById('lotRows');
+  let totalShares = 0, totalCost = 0, valid = 0;
+  Array.from(container.querySelectorAll('.lot-row')).forEach((row, i) => {
+    const shares = parseFloat(row.querySelector('[id^=lot-shares]').value) || 0;
+    const price  = parseFloat(row.querySelector('[id^=lot-price]').value) || 0;
+    if (shares > 0 && price > 0) { totalShares += shares; totalCost += shares * price; valid++; }
+  });
+  const avg = totalShares > 0 ? (totalCost / totalShares).toFixed(2) : '—';
+  document.getElementById('lotSummary').innerHTML = valid > 0
+    ? `Total: <span>${totalShares} shares</span> · Avg Price: <span>$${avg}</span> · Total Cost: <span>$${totalCost.toFixed(2)}</span>`
+    : '';
+}
+
+function getLots() {
+  const container = document.getElementById('lotRows');
+  const lots = [];
+  Array.from(container.querySelectorAll('.lot-row')).forEach(row => {
+    const date   = row.querySelector('[id^=lot-date]').value;
+    const shares = parseFloat(row.querySelector('[id^=lot-shares]').value);
+    const price  = parseFloat(row.querySelector('[id^=lot-price]').value);
+    if (shares > 0 && price > 0) lots.push({ date: date || null, shares, price });
+  });
+  return lots;
 }
 
 function autofillPosition(symbol) {
@@ -1072,27 +1232,48 @@ function autofillPosition(symbol) {
   if (seed) {
     document.getElementById('fTarget').value = seed.targetprice;
     document.getElementById('fRisk').value   = seed.risklevel;
+    document.getElementById('fRiskLots').value = seed.risklevel;
     document.getElementById('fThesis').value = seed.thesis;
   }
 }
 
 async function savePosition() {
-  const symbol = document.getElementById('fSymbol').value.trim().toUpperCase();
-  const shares = parseInt(document.getElementById('fShares').value);
-  const entry  = parseFloat(document.getElementById('fEntry').value);
-  const target = parseFloat(document.getElementById('fTarget').value);
-  const risk   = document.getElementById('fRisk').value;
-  const thesis = document.getElementById('fThesis').value.trim();
-  const type   = document.getElementById('modalType').value;
+  const symbol     = document.getElementById('fSymbol').value.trim().toUpperCase();
+  const target     = parseFloat(document.getElementById('fTarget').value);
+  const thesis     = document.getElementById('fThesis').value.trim();
+  const type       = document.getElementById('modalType').value;
+  const isMultiple = document.getElementById('fMultipleLots').checked;
 
-  if (!symbol || !shares || !entry || !target || !thesis) {
-    showToast('Please fill in all fields', 'error'); return;
+  if (!symbol || !target || !thesis) {
+    showToast('Symbol, target price and thesis are required', 'error'); return;
+  }
+
+  let shares, entryPrice, purchaseDate, lots, risk;
+
+  if (isMultiple) {
+    lots  = getLots();
+    risk  = document.getElementById('fRiskLots').value;
+    if (!lots.length) { showToast('Please add at least one lot', 'error'); return; }
+    const totalShares = lots.reduce((s, l) => s + l.shares, 0);
+    const totalCost   = lots.reduce((s, l) => s + l.shares * l.price, 0);
+    shares       = totalShares;
+    entryPrice   = totalCost / totalShares;
+    purchaseDate = lots[0].date || null;
+  } else {
+    shares       = parseInt(document.getElementById('fShares').value);
+    entryPrice   = parseFloat(document.getElementById('fEntry').value);
+    purchaseDate = document.getElementById('fDate').value || null;
+    risk         = document.getElementById('fRisk').value;
+    lots         = [];
+    if (!shares || !entryPrice) { showToast('Please fill in shares and entry price', 'error'); return; }
   }
 
   try {
     const result = await sbInsert('StocksPositions', {
-      symbol, shares, entryprice: entry, targetprice: target,
-      risklevel: risk, thesis, positiontype: type
+      symbol, shares, entryprice: entryPrice, targetprice: target,
+      risklevel: risk, thesis, positiontype: type,
+      purchasedate: purchaseDate,
+      lots: JSON.stringify(lots)
     });
     positions.push(Array.isArray(result) ? result[0] : result);
     closeModal();
