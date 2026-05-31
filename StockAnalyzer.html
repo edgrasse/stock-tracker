@@ -616,7 +616,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.5</span> · MAY 31, 2026 · 11:45 AM</div>
+      <div class="build-version">BUILD <span>v1.6</span> · MAY 31, 2026 · 12:15 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1470,7 +1470,7 @@ async function runDailyAnalysis() {
       entryPrice: parseFloat(p.entryprice),
       targetPrice: parseFloat(p.targetprice),
       riskLevel: p.risklevel,
-      thesis: p.thesis,
+      thesis: (p.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
       positionType: p.positiontype
     }));
 
@@ -1563,7 +1563,8 @@ function showToast(msg, type = 'info') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 4000);
+  const duration = type === 'error' ? 12000 : 4000;
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
 document.getElementById('addModal').addEventListener('click',      function(e) { if (e.target === this) closeModal(); });
