@@ -576,9 +576,25 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  .summary-card.cash::before { background: var(--amber); }
+  .summary-card.cash .s-dot { background: var(--amber); }
+
+  .btn-settings {
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    padding: 8px 12px;
+  }
+  .btn-settings:hover { color: var(--muted); border-color: var(--border2); }
+
+  .cash-rec {
+    font-size: 0.72rem;
+    color: var(--amber);
+    margin-top: 6px;
+    line-height: 1.4;
+    font-style: italic;
+  }
 
   @media (max-width: 768px) {
     .summary-grid { grid-template-columns: 1fr; }
@@ -600,9 +616,10 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.2</span> · MAY 30, 2026 · 9:00 AM</div>
+      <div class="build-version">BUILD <span>v1.4</span> · MAY 31, 2026 · 10:00 AM</div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
       <button class="btn btn-ghost" onclick="openAddModal('user')">+ My Pick</button>
       <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI Pick</button>
       <button class="btn btn-primary" id="analyzeBtn" onclick="runDailyAnalysis()">⟳ Run Analysis</button>
@@ -610,7 +627,7 @@
   </div>
 
   <!-- Summary -->
-  <div class="summary-grid">
+  <div class="summary-grid" style="grid-template-columns: repeat(4, 1fr);">
     <div class="summary-card user">
       <div class="s-label"><span class="s-dot"></span>Your Positions</div>
       <div class="s-value" id="userValue">—</div>
@@ -628,6 +645,12 @@
       <div class="s-value" id="combinedValue">—</div>
       <div class="s-gain neutral" id="combinedGain">—</div>
       <div class="s-cost" id="combinedCost">—</div>
+    </div>
+    <div class="summary-card cash">
+      <div class="s-label"><span class="s-dot"></span>Available Cash</div>
+      <div class="s-value" id="cashValue" style="color:var(--amber);">—</div>
+      <div class="s-cost" id="cashAccount">401(k) · Tax Advantaged</div>
+      <div class="cash-rec" id="cashRec"></div>
     </div>
   </div>
 
@@ -779,6 +802,41 @@
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h2>⚙ Portfolio Settings</h2>
+    <div class="form-group">
+      <label>Account Type</label>
+      <input type="text" id="sAccountType" placeholder="e.g. 401(k)">
+    </div>
+    <div class="form-group">
+      <label>Time Horizon</label>
+      <input type="text" id="sTimeHorizon" placeholder="e.g. Minimum 4 years">
+    </div>
+    <div class="form-group">
+      <label>Tax Consequences</label>
+      <input type="text" id="sTaxConsequences" placeholder="e.g. None — tax advantaged">
+    </div>
+    <div class="form-group">
+      <label>Risk Tolerance</label>
+      <input type="text" id="sRiskTolerance" placeholder="e.g. Aggressive growth">
+    </div>
+    <div class="form-group">
+      <label>Available Cash ($)</label>
+      <input type="number" id="sCash" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Standing Instructions to AI</label>
+      <textarea id="sInstructions" style="min-height:120px;" placeholder="Any standing instructions you want the AI to always consider..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -836,9 +894,10 @@ async function claudeCall(claudeMethod, extra) {
 }
 
 // ── State ──
-let positions  = [];
+let positions   = [];
 let analysisMap = {};
 let notesMap    = {};
+let settings    = null;
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async () => {
@@ -849,6 +908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadAll() {
   try {
+    await loadSettings();
     await loadPositions();
     await loadLatestAnalysis();
     await loadNotes();
@@ -856,6 +916,73 @@ async function loadAll() {
   } catch (err) {
     showToast('Failed to load: ' + err.message, 'error');
   }
+}
+
+async function loadSettings() {
+  const data = await sbGet('StocksSettings', 'limit=1');
+  settings = Array.isArray(data) && data.length ? data[0] : null;
+  renderCash();
+}
+
+function renderCash() {
+  const cash = settings ? parseFloat(settings.available_cash) : 0;
+  document.getElementById('cashValue').textContent = '$' + fmt(cash);
+  if (settings) {
+    document.getElementById('cashAccount').textContent =
+      (settings.account_type || '401(k)') + ' · ' + (settings.tax_consequences || 'Tax Advantaged');
+  }
+}
+
+function openSettings() {
+  if (settings) {
+    document.getElementById('sAccountType').value    = settings.account_type || '';
+    document.getElementById('sTimeHorizon').value    = settings.time_horizon || '';
+    document.getElementById('sTaxConsequences').value= settings.tax_consequences || '';
+    document.getElementById('sRiskTolerance').value  = settings.risk_tolerance || '';
+    document.getElementById('sCash').value           = parseFloat(settings.available_cash || 0).toFixed(2);
+    document.getElementById('sInstructions').value   = settings.standing_instructions || '';
+  }
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+async function saveSettings() {
+  const data = {
+    account_type:         document.getElementById('sAccountType').value.trim(),
+    time_horizon:         document.getElementById('sTimeHorizon').value.trim(),
+    tax_consequences:     document.getElementById('sTaxConsequences').value.trim(),
+    risk_tolerance:       document.getElementById('sRiskTolerance').value.trim(),
+    available_cash:       parseFloat(document.getElementById('sCash').value) || 0,
+    standing_instructions:document.getElementById('sInstructions').value.trim(),
+    updated_at:           new Date().toISOString()
+  };
+
+  try {
+    if (settings && settings.id) {
+      await sbUpdate('StocksSettings', settings.id, data);
+      Object.assign(settings, data);
+    } else {
+      const result = await sbInsert('StocksSettings', data);
+      settings = Array.isArray(result) ? result[0] : result;
+    }
+    renderCash();
+    closeSettings();
+    showToast('Settings saved', 'success');
+  } catch (err) {
+    showToast('Failed to save settings: ' + err.message, 'error');
+  }
+
+}
+
+async function updateCash(amount) {
+  if (!settings) return;
+  const newCash = Math.max(0, parseFloat(settings.available_cash || 0) + amount);
+  await sbUpdate('StocksSettings', settings.id, { available_cash: newCash, updated_at: new Date().toISOString() });
+  settings.available_cash = newCash;
+  renderCash();
 }
 
 async function loadPositions() {
@@ -885,6 +1012,7 @@ async function loadNotes() {
 // ── Render ──
 function renderAll() {
   renderSummary();
+  renderCash();
   renderPositions('user', 'userPositions');
   renderPositions('ai-suggested', 'aiPositions');
 }
@@ -1139,14 +1267,23 @@ async function addNote(positionId) {
 
 // ── Delete Position ──
 async function deletePosition(id) {
-  if (!confirm('Remove this position? This will also delete all analysis and notes for it.')) return;
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+
+  const a = analysisMap[id];
+  const currentPrice = a ? parseFloat(a.currentprice) : parseFloat(pos.entryprice);
+  const saleValue = currentPrice * parseInt(pos.shares);
+
+  if (!confirm(`Remove ${pos.symbol}?\n\nCurrent value: $${fmt(saleValue)}\nThis will add $${fmt(saleValue)} to your available cash.\n\nThis also deletes all analysis and notes for this position.`)) return;
+
   try {
     await sbDelete('StocksPositions', id);
     positions = positions.filter(p => p.id !== id);
     delete analysisMap[id];
     delete notesMap[id];
+    await updateCash(saleValue);
     renderAll();
-    showToast('Position removed', 'success');
+    showToast(`${pos.symbol} removed · $${fmt(saleValue)} added to cash`, 'success');
   } catch (err) {
     showToast('Failed to remove: ' + err.message, 'error');
   }
@@ -1336,9 +1473,21 @@ async function runDailyAnalysis() {
       positionType: p.positiontype
     }));
 
+    const portfolioContext = settings ? `
+PORTFOLIO CONTEXT (apply to ALL analysis):
+- Account Type: ${settings.account_type}
+- Time Horizon: ${settings.time_horizon}
+- Tax Consequences: ${settings.tax_consequences}
+- Risk Tolerance: ${settings.risk_tolerance}
+- Available Cash: $${fmt(parseFloat(settings.available_cash || 0))}
+- Standing Instructions: ${settings.standing_instructions}
+
+CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizon. NEVER recommend selling based on short-term price movements or tax considerations. Only recommend selling if the underlying growth thesis has fundamentally broken down. For cash deployment recommendations, identify the single best opportunity if available cash exceeds $5,000.
+` : '';
+
     const result = await claudeCall('stocksAnalysis', {
       positions: posData,
-      prompt: 'Focus on growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus.'
+      prompt: portfolioContext + 'Focus on long-term growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus. If available cash is meaningful, include a cash deployment recommendation in the aiNotes for the most compelling position.'
     });
 
     if (result.error) throw new Error(result.error);
@@ -1416,8 +1565,9 @@ function showToast(msg, type = 'info') {
   setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-document.getElementById('addModal').addEventListener('click',  function(e) { if (e.target === this) closeModal(); });
-document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+document.getElementById('addModal').addEventListener('click',      function(e) { if (e.target === this) closeModal(); });
+document.getElementById('editModal').addEventListener('click',     function(e) { if (e.target === this) closeEditModal(); });
+document.getElementById('settingsModal').addEventListener('click', function(e) { if (e.target === this) closeSettings(); });
 </script>
 </body>
 </html>
