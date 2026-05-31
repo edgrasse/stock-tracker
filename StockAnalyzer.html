@@ -616,7 +616,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.5</span> · MAY 31, 2026 · 11:00 AM</div>
+      <div class="build-version">BUILD <span>v1.5</span> · MAY 31, 2026 · 11:45 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -889,8 +889,9 @@ async function claudeCall(claudeMethod, extra) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ appId: APP_ID, method: 'CLAUDE_API', claudeMethod, ...extra })
   });
-  if (!r.ok) throw new Error('Claude call error: ' + r.status);
-  return r.json();
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || ('Claude call error: ' + r.status));
+  return data;
 }
 
 // ── State ──
