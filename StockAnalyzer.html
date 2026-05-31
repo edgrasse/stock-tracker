@@ -1490,7 +1490,7 @@ CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizo
       prompt: portfolioContext + 'Focus on long-term growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus. If available cash is meaningful, include a cash deployment recommendation in the aiNotes for the most compelling position.'
     });
 
-    if (result.error) throw new Error(result.error);
+    if (result.error) throw new Error(result.error + (result.stack ? ' | ' + result.stack : ''));
 
     for (const a of (result.analysis || [])) {
       const pos = positions.find(p => p.symbol === a.symbol);
