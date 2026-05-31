@@ -616,7 +616,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.6</span> · MAY 31, 2026 · 12:15 PM</div>
+      <div class="build-version">BUILD <span>v1.7</span> · MAY 31, 2026 · 12:45 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1460,21 +1460,9 @@ async function runDailyAnalysis() {
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Analyzing...';
-  showToast('Fetching prices and running AI analysis...', 'info');
+  showToast('Starting analysis...', 'info');
 
-  try {
-    const posData = positions.map(p => ({
-      id: p.id, symbol: p.symbol,
-      shares: parseInt(p.shares),
-      entryPrice: parseFloat(p.entryprice),
-      targetPrice: parseFloat(p.targetprice),
-      riskLevel: p.risklevel,
-      thesis: (p.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
-      positionType: p.positiontype
-    }));
-
-    const portfolioContext = settings ? `
+  const portfolioContext = settings ? `
 PORTFOLIO CONTEXT (apply to ALL analysis):
 - Account Type: ${settings.account_type}
 - Time Horizon: ${settings.time_horizon}
@@ -1483,17 +1471,23 @@ PORTFOLIO CONTEXT (apply to ALL analysis):
 - Available Cash: $${fmt(parseFloat(settings.available_cash || 0))}
 - Standing Instructions: ${settings.standing_instructions}
 
-CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizon. NEVER recommend selling based on short-term price movements or tax considerations. Only recommend selling if the underlying growth thesis has fundamentally broken down. For cash deployment recommendations, identify the single best opportunity if available cash exceeds $5,000.
+CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizon. NEVER recommend selling based on short-term price movements or tax considerations. Only recommend selling if the underlying growth thesis has fundamentally broken down.
 ` : '';
 
-    const result = await claudeCall('stocksAnalysis', {
-      positions: posData,
-      prompt: portfolioContext + 'Focus on long-term growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus. If available cash is meaningful, include a cash deployment recommendation in the aiNotes for the most compelling position.'
-    });
+  const basePrompt = portfolioContext + 'Focus on long-term growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus.';
 
-    if (result.error) throw new Error(result.error + (result.stack ? ' | ' + result.stack : ''));
+  const buildPosData = (arr) => arr.map(p => ({
+    id: p.id, symbol: p.symbol,
+    shares: parseInt(p.shares),
+    entryPrice: parseFloat(p.entryprice),
+    targetPrice: parseFloat(p.targetprice),
+    riskLevel: p.risklevel,
+    thesis: (p.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
+    positionType: p.positiontype
+  }));
 
-    for (const a of (result.analysis || [])) {
+  const saveAnalysis = async (analysisArray) => {
+    for (const a of analysisArray) {
       const pos = positions.find(p => p.symbol === a.symbol);
       if (!pos) continue;
       const saved = await sbInsert('StocksAnalysis', {
@@ -1511,7 +1505,35 @@ CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizo
       });
       analysisMap[pos.id] = Array.isArray(saved) ? saved[0] : saved;
     }
+  };
 
+  try {
+    // Batch 1 — Your Positions
+    const userPositions = positions.filter(p => p.positiontype === 'user');
+    if (userPositions.length) {
+      btn.innerHTML = '<span class="spinner"></span>Analyzing your picks...';
+      const r1 = await claudeCall('stocksAnalysis', {
+        positions: buildPosData(userPositions),
+        prompt: basePrompt
+      });
+      if (r1.error) throw new Error(r1.error + (r1.stack ? ' | ' + r1.stack : ''));
+      await saveAnalysis(r1.analysis || []);
+      showToast(`Your positions done (${userPositions.length}). Now analyzing AI picks...`, 'info');
+    }
+
+    // Batch 2 — AI Suggested
+    const aiPositions = positions.filter(p => p.positiontype === 'ai-suggested');
+    if (aiPositions.length) {
+      btn.innerHTML = '<span class="spinner"></span>Analyzing AI picks...';
+      const r2 = await claudeCall('stocksAnalysis', {
+        positions: buildPosData(aiPositions),
+        prompt: basePrompt + ' If available cash is meaningful, include a cash deployment recommendation in the aiNotes for the most compelling position.'
+      });
+      if (r2.error) throw new Error(r2.error + (r2.stack ? ' | ' + r2.stack : ''));
+      await saveAnalysis(r2.analysis || []);
+    }
+
+    // Save portfolio summary
     const calcTot = (arr) => {
       let value = 0, cost = 0;
       arr.forEach(p => {
@@ -1541,11 +1563,12 @@ CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizo
       },
       filters: 'summarydate'
     });
+
     document.getElementById('lastUpdated').textContent =
       'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     renderAll();
-    showToast('Analysis complete', 'success');
+    showToast('Analysis complete — all positions updated', 'success');
 
   } catch (err) {
     showToast('Analysis failed: ' + err.message, 'error');
@@ -1553,6 +1576,7 @@ CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizo
     btn.disabled = false;
     btn.innerHTML = '⟳ Run Analysis';
   }
+}
 }
 
 // ── Utilities ──
