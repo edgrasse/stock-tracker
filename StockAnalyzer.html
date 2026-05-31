@@ -596,6 +596,96 @@
     font-style: italic;
   }
 
+  .stale-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(255,184,48,0.15);
+    color: var(--amber);
+    border: 1px solid rgba(255,184,48,0.3);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .last-analyzed {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+
+  .last-analyzed.stale { color: var(--amber); }
+
+  .staleness-banner {
+    background: rgba(255,184,48,0.06);
+    border: 1px solid rgba(255,184,48,0.2);
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .staleness-banner-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--amber);
+    flex: 1;
+  }
+
+  .suggestion-banner {
+    background: rgba(0,212,255,0.04);
+    border: 1px solid rgba(0,212,255,0.12);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+  }
+
+  .suggestion-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+
+  .suggestion-items { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .suggestion-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 5px 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .suggestion-chip:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .btn-analyze {
+    background: var(--cyan);
+    color: var(--bg);
+    font-size: 0.68rem;
+    padding: 7px 16px;
+    border-radius: 4px;
+  }
+
+  .btn-analyze:hover { background: #33ddff; transform: translateY(-1px); }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
   @media (max-width: 768px) {
     .summary-grid { grid-template-columns: 1fr; }
     .pos-top { grid-template-columns: 90px 1fr; grid-template-rows: auto auto; gap: 12px; }
@@ -616,13 +706,12 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.8</span> · MAY 31, 2026 · 1:00 PM</div>
+      <div class="build-version">BUILD <span>v1.9</span> · MAY 31, 2026 · 2:30 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
       <button class="btn btn-ghost" onclick="openAddModal('user')">+ My Pick</button>
       <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI Pick</button>
-      <button class="btn btn-primary" id="analyzeBtn" onclick="runDailyAnalysis()">⟳ Run Analysis</button>
     </div>
   </div>
 
@@ -654,7 +743,18 @@
     </div>
   </div>
 
-  <div class="last-updated" id="lastUpdated">Not yet updated today — click Run Analysis</div>
+  <div class="last-updated" id="lastUpdated">Open a position card and click Analyze to get AI analysis</div>
+
+  <!-- Staleness Banner -->
+  <div class="staleness-banner" id="stalenessBanner" style="display:none;">
+    <div class="staleness-banner-text" id="stalenessText"></div>
+  </div>
+
+  <!-- Daily Suggestion Banner -->
+  <div class="suggestion-banner" id="suggestionBanner" style="display:none;">
+    <div class="suggestion-title">⟳ Suggested for Review Today</div>
+    <div class="suggestion-items" id="suggestionItems"></div>
+  </div>
 
   <!-- Your Positions -->
   <div class="positions-section">
@@ -938,6 +1038,168 @@ function renderCash() {
   }
 }
 
+function renderStaleness() {
+  const STALE_DAYS = 14;
+  const now = new Date();
+
+  const stalePositions = positions.filter(p => {
+    const a = analysisMap[p.id];
+    if (!a) return true;
+    const days = Math.floor((now - new Date(a.analysisdate)) / 86400000);
+    return days >= STALE_DAYS;
+  });
+
+  // Staleness banner
+  const banner = document.getElementById('stalenessBanner');
+  const bannerText = document.getElementById('stalenessText');
+  if (stalePositions.length > 0) {
+    bannerText.textContent = `⚠ ${stalePositions.length} position${stalePositions.length > 1 ? 's' : ''} not analyzed in ${STALE_DAYS}+ days — expand the card and click Analyze`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Daily suggestion banner — prioritize: stale + earnings soon, then stale + diverging/broken, then just stale
+  const suggestions = [...stalePositions]
+    .sort((a, b) => {
+      const aAnalysis = analysisMap[a.id];
+      const bAnalysis = analysisMap[b.id];
+      const aStatus = aAnalysis ? aAnalysis.thesisstatus : 'none';
+      const bStatus = bAnalysis ? bAnalysis.thesisstatus : 'none';
+      const priority = { 'broken': 0, 'diverging': 1, 'none': 2, 'on-track': 3, 'accelerating': 4 };
+      return (priority[aStatus] || 2) - (priority[bStatus] || 2);
+    })
+    .slice(0, 3);
+
+  const suggBanner = document.getElementById('suggestionBanner');
+  const suggItems  = document.getElementById('suggestionItems');
+
+  if (suggestions.length > 0) {
+    suggItems.innerHTML = suggestions.map(p => {
+      const a = analysisMap[p.id];
+      const status = a ? a.thesisstatus : 'never analyzed';
+      return `<div class="suggestion-chip" onclick="expandAndAnalyze('${p.id}')">
+        ${p.symbol} <span style="color:var(--dim);font-size:0.62rem;">${status}</span>
+      </div>`;
+    }).join('');
+    suggBanner.style.display = 'block';
+  } else {
+    suggBanner.style.display = 'none';
+  }
+}
+
+function expandAndAnalyze(id) {
+  // Open the card and scroll to it
+  const detail = document.getElementById('detail-' + id);
+  const btn    = document.getElementById('expand-' + id);
+  if (detail && !detail.classList.contains('open')) {
+    detail.classList.add('open');
+    if (btn) btn.classList.add('open');
+  }
+  const card = document.getElementById('card-' + id);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function analyzePosition(id) {
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+
+  const btn = document.getElementById('analyze-btn-' + id);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+
+  const portfolioContext = settings ? `
+PORTFOLIO CONTEXT:
+- Account Type: ${settings.account_type}
+- Time Horizon: ${settings.time_horizon}
+- Tax Consequences: ${settings.tax_consequences}
+- Risk Tolerance: ${settings.risk_tolerance}
+- Available Cash: $${fmt(parseFloat(settings.available_cash || 0))}
+- Standing Instructions: ${settings.standing_instructions}
+CRITICAL: Tax-advantaged 401k, 4+ year horizon. Never recommend selling based on short-term moves or taxes. Only sell if thesis fundamentally broken.
+` : '';
+
+  try {
+    const posData = [{
+      id: pos.id,
+      symbol: pos.symbol,
+      shares: parseInt(pos.shares),
+      entryPrice: parseFloat(pos.entryprice),
+      targetPrice: parseFloat(pos.targetprice),
+      riskLevel: pos.risklevel,
+      thesis: (pos.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
+      positionType: pos.positiontype
+    }];
+
+    const result = await claudeCall('stocksAnalysis', {
+      positions: posData,
+      prompt: portfolioContext + 'Provide thorough growth thesis validation, current catalyst analysis, and specific actionable recommendation.'
+    });
+
+    if (result.error) throw new Error(result.error);
+
+    const analysis = (result.analysis || [])[0];
+    if (!analysis) throw new Error('No analysis returned');
+
+    const saved = await sbInsert('StocksAnalysis', {
+      position_id: pos.id,
+      analysisdate: today(),
+      currentprice: analysis.currentPrice || parseFloat(pos.entryprice),
+      currentvalue: analysis.currentValue || 0,
+      unrealizedgain: analysis.unrealizedGain || 0,
+      gainpercent: analysis.gainPercent || 0,
+      thesisstatus: analysis.thesisStatus || 'on-track',
+      thesiscomparison: analysis.thesisComparison || '',
+      buysignal: analysis.buySignal || false,
+      sellsignal: analysis.sellSignal || false,
+      recommendation: analysis.recommendation || '',
+      ainotes: analysis.aiNotes || ''
+    });
+
+    analysisMap[pos.id] = Array.isArray(saved) ? saved[0] : saved;
+
+    // Update summary
+    const calcTot = (arr) => {
+      let value = 0, cost = 0;
+      arr.forEach(p => {
+        const a2 = analysisMap[p.id];
+        const price = a2 ? parseFloat(a2.currentprice) : parseFloat(p.entryprice);
+        value += price * parseInt(p.shares);
+        cost  += parseFloat(p.entryprice) * parseInt(p.shares);
+      });
+      return { value, cost };
+    };
+
+    const u  = calcTot(positions.filter(p => p.positiontype === 'user'));
+    const ai = calcTot(positions.filter(p => p.positiontype === 'ai-suggested'));
+
+    await workerCall({
+      method: 'UPSERT',
+      table: 'StocksPortfolioSummary',
+      data: {
+        summarydate: today(),
+        usertotalvalue: u.value, usertotalcost: u.cost,
+        usertotalgain: u.value - u.cost,
+        usergainpercent: u.cost > 0 ? ((u.value - u.cost) / u.cost * 100) : 0,
+        aitotalvalue: ai.value, aitotalcost: ai.cost,
+        aitotalgain: ai.value - ai.cost,
+        aigainpercent: ai.cost > 0 ? ((ai.value - ai.cost) / ai.cost * 100) : 0,
+        combinedtotalvalue: u.value + ai.value
+      },
+      filters: 'summarydate'
+    });
+
+    document.getElementById('lastUpdated').textContent =
+      `${pos.symbol} last analyzed: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+
+    renderAll();
+    showToast(`${pos.symbol} analysis complete`, 'success');
+
+  } catch (err) {
+    showToast(`${pos.symbol} analysis failed: ` + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '⟳ Analyze'; }
+  }
+}
+
 function openSettings() {
   if (settings) {
     document.getElementById('sAccountType').value    = settings.account_type || '';
@@ -1020,6 +1282,7 @@ function renderAll() {
   renderCash();
   renderPositions('user', 'userPositions');
   renderPositions('ai-suggested', 'aiPositions');
+  renderStaleness();
 }
 
 function renderSummary() {
@@ -1088,7 +1351,17 @@ function buildCard(p) {
   const gainClass = gain >= 0 ? 'pos' : 'neg';
   const gainSign  = gain >= 0 ? '+' : '';
 
-  // ── Recommendation block (from latest analysis) ──
+  // ── Staleness ──
+  const STALE_DAYS = 14;
+  const daysSinceAnalysis = a ? Math.floor((new Date() - new Date(a.analysisdate)) / 86400000) : null;
+  const isStale = daysSinceAnalysis === null || daysSinceAnalysis >= STALE_DAYS;
+  const lastAnalyzedText = daysSinceAnalysis === null
+    ? 'Never analyzed'
+    : daysSinceAnalysis === 0 ? 'Analyzed today'
+    : daysSinceAnalysis === 1 ? 'Analyzed yesterday'
+    : `Analyzed ${daysSinceAnalysis} days ago`;
+  const staleBadge = isStale ? `<span class="stale-badge">Stale</span>` : '';
+  const lastAnalyzedClass = isStale ? 'last-analyzed stale' : 'last-analyzed';
   let recPillClass = 'rec-none';
   let recPillText  = 'No Analysis Yet';
   let recBullets   = ['Run Analysis to generate AI recommendations for this position'];
@@ -1122,8 +1395,9 @@ function buildCard(p) {
 <div class="pos-card" id="card-${p.id}">
   <div class="pos-top" onclick="toggleCard('${p.id}')">
     <div>
-      <div class="pos-symbol">${p.symbol}</div>
+      <div class="pos-symbol">${p.symbol}${staleBadge}</div>
       <div class="pos-meta">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg entry${p.purchasedate ? ' · ' + p.purchasedate : ''}</div>
+      <div class="${lastAnalyzedClass}">${lastAnalyzedText}</div>
     </div>
     <div class="pos-rec-block">
       <div class="rec-pill ${recPillClass}">${recPillText}</div>
@@ -1219,6 +1493,7 @@ function buildCard(p) {
       <span class="risk-badge risk-${p.risklevel}">${p.risklevel} risk</span>
       <span class="target-info" style="margin-left:10px;">Target <span>$${parseFloat(p.targetprice).toFixed(2)}</span></span>
       <span class="footer-spacer"></span>
+      <button class="btn btn-analyze" id="analyze-btn-${p.id}" onclick="analyzePosition('${p.id}')">⟳ Analyze</button>
       <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Edit</button>
       <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
     </div>
@@ -1455,130 +1730,6 @@ async function saveEdit() {
     showToast('Position updated', 'success');
   } catch (err) {
     showToast('Failed to update: ' + err.message, 'error');
-  }
-}
-
-// ── Run Daily Analysis ──
-async function runDailyAnalysis() {
-  if (!positions.length) { showToast('No positions to analyze', 'info'); return; }
-
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  showToast('Starting analysis...', 'info');
-
-  const portfolioContext = settings ? `
-PORTFOLIO CONTEXT (apply to ALL analysis):
-- Account Type: ${settings.account_type}
-- Time Horizon: ${settings.time_horizon}
-- Tax Consequences: ${settings.tax_consequences}
-- Risk Tolerance: ${settings.risk_tolerance}
-- Available Cash: $${fmt(parseFloat(settings.available_cash || 0))}
-- Standing Instructions: ${settings.standing_instructions}
-
-CRITICAL: This is a tax-advantaged retirement account with a 4+ year time horizon. NEVER recommend selling based on short-term price movements or tax considerations. Only recommend selling if the underlying growth thesis has fundamentally broken down.
-` : '';
-
-  const basePrompt = portfolioContext + 'Focus on long-term growth thesis validation, catalyst tracking, and specific actionable recommendations. Do not recommend selling just because price is near original target — reassess target against current growth trajectory and analyst consensus.';
-
-  const buildPosData = (arr) => arr.map(p => ({
-    id: p.id, symbol: p.symbol,
-    shares: parseInt(p.shares),
-    entryPrice: parseFloat(p.entryprice),
-    targetPrice: parseFloat(p.targetprice),
-    riskLevel: p.risklevel,
-    thesis: (p.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
-    positionType: p.positiontype
-  }));
-
-  const saveAnalysis = async (analysisArray) => {
-    for (const a of analysisArray) {
-      const pos = positions.find(p => p.symbol === a.symbol);
-      if (!pos) continue;
-      const saved = await sbInsert('StocksAnalysis', {
-        position_id: pos.id, analysisdate: today(),
-        currentprice: a.currentPrice || parseFloat(pos.entryprice),
-        currentvalue: a.currentValue || 0,
-        unrealizedgain: a.unrealizedGain || 0,
-        gainpercent: a.gainPercent || 0,
-        thesisstatus: a.thesisStatus || 'on-track',
-        thesiscomparison: a.thesisComparison || '',
-        buysignal: a.buySignal || false,
-        sellsignal: a.sellSignal || false,
-        recommendation: a.recommendation || '',
-        ainotes: a.aiNotes || ''
-      });
-      analysisMap[pos.id] = Array.isArray(saved) ? saved[0] : saved;
-    }
-  };
-
-  try {
-    // Batch 1 — Your Positions
-    const userPositions = positions.filter(p => p.positiontype === 'user');
-    if (userPositions.length) {
-      btn.innerHTML = '<span class="spinner"></span>Analyzing your picks...';
-      const r1 = await claudeCall('stocksAnalysis', {
-        positions: buildPosData(userPositions),
-        prompt: basePrompt
-      });
-      if (r1.error) throw new Error(r1.error + (r1.stack ? ' | ' + r1.stack : ''));
-      await saveAnalysis(r1.analysis || []);
-      showToast(`Your positions done (${userPositions.length}). Now analyzing AI picks...`, 'info');
-    }
-
-    // Batch 2 — AI Suggested
-    const aiPositions = positions.filter(p => p.positiontype === 'ai-suggested');
-    if (aiPositions.length) {
-      btn.innerHTML = '<span class="spinner"></span>Analyzing AI picks...';
-      const r2 = await claudeCall('stocksAnalysis', {
-        positions: buildPosData(aiPositions),
-        prompt: basePrompt + ' If available cash is meaningful, include a cash deployment recommendation in the aiNotes for the most compelling position.'
-      });
-      if (r2.error) throw new Error(r2.error + (r2.stack ? ' | ' + r2.stack : ''));
-      await saveAnalysis(r2.analysis || []);
-    }
-
-    // Save portfolio summary
-    const calcTot = (arr) => {
-      let value = 0, cost = 0;
-      arr.forEach(p => {
-        const a2 = analysisMap[p.id];
-        const price = a2 ? parseFloat(a2.currentprice) : parseFloat(p.entryprice);
-        value += price * parseInt(p.shares);
-        cost  += parseFloat(p.entryprice) * parseInt(p.shares);
-      });
-      return { value, cost };
-    };
-
-    const u  = calcTot(positions.filter(p => p.positiontype === 'user'));
-    const ai = calcTot(positions.filter(p => p.positiontype === 'ai-suggested'));
-
-    await workerCall({
-      method: 'UPSERT',
-      table: 'StocksPortfolioSummary',
-      data: {
-        summarydate: today(),
-        usertotalvalue: u.value, usertotalcost: u.cost,
-        usertotalgain: u.value - u.cost,
-        usergainpercent: u.cost > 0 ? ((u.value - u.cost) / u.cost * 100) : 0,
-        aitotalvalue: ai.value, aitotalcost: ai.cost,
-        aitotalgain: ai.value - ai.cost,
-        aigainpercent: ai.cost > 0 ? ((ai.value - ai.cost) / ai.cost * 100) : 0,
-        combinedtotalvalue: u.value + ai.value
-      },
-      filters: 'summarydate'
-    });
-
-    document.getElementById('lastUpdated').textContent =
-      'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    renderAll();
-    showToast('Analysis complete — all positions updated', 'success');
-
-  } catch (err) {
-    showToast('Analysis failed: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '⟳ Run Analysis';
   }
 }
 
