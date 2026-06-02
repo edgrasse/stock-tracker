@@ -235,39 +235,77 @@
 
   /* Top row — always visible */
   .pos-top {
-    display: grid;
-    grid-template-columns: 120px 1fr auto auto;
-    align-items: center;
-    gap: 24px;
-    padding: 18px 20px;
+    padding: 18px 20px 14px;
     cursor: pointer;
     user-select: none;
   }
 
   .pos-top:hover { background: rgba(255,255,255,0.01); }
 
-  .pos-symbol { font-size: 1.5rem; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; }
-  .pos-meta { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
+  /* Row 1: Symbol + Price + Gain + Analyze + Expand */
+  .pos-row1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: nowrap;
+  }
 
-  /* Price block */
-  .pos-price-block { text-align: right; min-width: 100px; }
-  .pos-price { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; }
-  .pos-gain { font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+  .pos-symbol { font-size: 1.4rem; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; flex-shrink: 0; }
+  .pos-price  { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--text); flex-shrink: 0; }
+  .pos-gain   { font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; }
   .pos-gain.pos { color: var(--green); }
   .pos-gain.neg { color: var(--red); }
   .pos-gain.neutral { color: var(--muted); }
+  .pos-row1-spacer { flex: 1; }
 
-  /* Recommendation pill — center of card */
-  .pos-rec-block { flex: 1; padding: 0 16px; }
+  /* Row 2: 4-column metrics grid */
+  .pos-metrics {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+    gap: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .pos-metric-cell {
+    padding: 8px 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .pos-metric-cell:last-child { border-right: none; }
+
+  .pos-metric-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+
+  .pos-metric-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* Row 3: Recommendation */
+  .pos-rec-block { padding: 0; }
 
   .rec-pill {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 5px 14px;
     border-radius: 4px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -280,15 +318,15 @@
   .rec-watch   { background: rgba(255,184,48,0.12); color: var(--amber); border: 1px solid rgba(255,184,48,0.3); }
   .rec-none    { background: var(--surface2); color: var(--dim); border: 1px solid var(--border); }
 
-  .rec-bullets { list-style: none; padding: 0; }
+  .rec-bullets { list-style: none; padding: 0; max-width: 100%; }
 
   .rec-bullets li {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     color: var(--muted);
-    line-height: 1.5;
-    padding-left: 14px;
+    line-height: 1.6;
+    padding-left: 16px;
     position: relative;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
 
   .rec-bullets li::before {
@@ -959,7 +997,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.1</span> · JUN 2, 2026 · 6:00 PM</div>
+      <div class="build-version">BUILD <span>v2.2</span> · JUN 2, 2026 · 7:00 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -2119,34 +2157,47 @@ function buildCard(p) {
 <div class="pos-card" id="card-${p.id}">
   <div class="pos-top" onclick="toggleCard('${p.id}')">
 
-    <div style="flex:1;min-width:0;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="pos-symbol">${p.symbol}${staleBadge}</div>
-          <div class="pos-price" style="font-size:1.1rem;">$${price.toFixed(2)}</div>
-          <div class="pos-gain ${gainClass}" style="font-size:0.82rem;">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <button class="btn-analyze btn" id="analyze-btn-${p.id}" onclick="event.stopPropagation(); analyzePosition('${p.id}')">⟳ Analyze</button>
-          <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
-        </div>
-      </div>
+    <!-- Row 1: Symbol · Price · Gain · Analyze · Expand -->
+    <div class="pos-row1">
+      <div class="pos-symbol">${p.symbol}${staleBadge}</div>
+      <div class="pos-price">$${price.toFixed(2)}</div>
+      <div class="pos-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
+      <div class="pos-row1-spacer"></div>
+      <button class="btn-analyze btn" id="analyze-btn-${p.id}" onclick="event.stopPropagation(); analyzePosition('${p.id}')">⟳ Analyze</button>
+      <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
+    </div>
 
-      <div style="display:flex;gap:20px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
-        <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg entry${p.purchasedate ? ' · ' + p.purchasedate : ''}</div>
-        <div style="display:flex;gap:14px;">
-          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Value </span><span style="color:var(--text);font-weight:700;">$${fmt(value)}</span></span>
-          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Cost </span><span style="color:var(--text);">$${fmt(cost)}</span></span>
-          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Target </span><span style="color:var(--purple);font-weight:700;">$${parseFloat(p.targetprice).toFixed(2)}</span></span>
-          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Upside </span><span style="color:var(--purple);">${upside}%</span></span>
-        </div>
-        <div class="${lastAnalyzedClass}">${lastAnalyzedText}</div>
+    <!-- Row 2: Metrics grid -->
+    <div class="pos-metrics">
+      <div class="pos-metric-cell">
+        <div class="pos-metric-label">Position</div>
+        <div class="pos-metric-value">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg</div>
       </div>
+      <div class="pos-metric-cell">
+        <div class="pos-metric-label">Value</div>
+        <div class="pos-metric-value">$${fmt(value)}</div>
+      </div>
+      <div class="pos-metric-cell">
+        <div class="pos-metric-label">Cost</div>
+        <div class="pos-metric-value">$${fmt(cost)}</div>
+      </div>
+      <div class="pos-metric-cell">
+        <div class="pos-metric-label">Target</div>
+        <div class="pos-metric-value" style="color:var(--purple);">$${parseFloat(p.targetprice).toFixed(2)}</div>
+      </div>
+      <div class="pos-metric-cell">
+        <div class="pos-metric-label">Upside</div>
+        <div class="pos-metric-value" style="color:var(--purple);">${upside}%</div>
+      </div>
+    </div>
 
-      <div class="pos-rec-block" style="padding:0;">
-        <div class="rec-pill ${recPillClass}" style="margin-bottom:6px;">${recPillText}</div>
-        <ul class="rec-bullets">${bulletHTML}</ul>
+    <!-- Row 3: Recommendation + last analyzed -->
+    <div class="pos-rec-block">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div class="rec-pill ${recPillClass}">${recPillText}</div>
+        <span class="${lastAnalyzedClass}">${lastAnalyzedText}</span>
       </div>
+      <ul class="rec-bullets">${bulletHTML}</ul>
     </div>
 
   </div>
