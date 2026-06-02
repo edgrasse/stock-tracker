@@ -686,7 +686,260 @@
   .btn-analyze:hover { background: #33ddff; transform: translateY(-1px); }
   .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  @media (max-width: 768px) {
+  /* ── Performance Row ── */
+  .perf-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .perf-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .perf-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+  }
+
+  .perf-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .perf-periods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .perf-period { text-align: center; }
+
+  .perf-period-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .perf-period-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .perf-period-value.pos { color: var(--green); }
+  .perf-period-value.neg { color: var(--red); }
+  .perf-period-value.neutral { color: var(--dim); }
+
+  .perf-top3 { border-top: 1px solid var(--border); padding-top: 10px; }
+
+  .perf-top3-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .perf-top3-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    margin-bottom: 3px;
+  }
+
+  .perf-top3-symbol { color: var(--cyan); font-weight: 700; }
+  .perf-top3-gain.pos { color: var(--green); }
+  .perf-top3-gain.neg { color: var(--red); }
+
+  .perf-loading {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--dim);
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  /* ── Buy/Sell Panel ── */
+  .signals-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+
+  .signals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .signals-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+
+  .signals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .signals-col-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .signals-col-label.buy { color: var(--green); }
+  .signals-col-label.sell { color: var(--red); }
+
+  .signal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+
+  .signal-symbol {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--cyan);
+    min-width: 50px;
+    cursor: pointer;
+  }
+
+  .signal-symbol:hover { text-decoration: underline; }
+
+  .signal-reason {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .signals-empty {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--dim);
+    padding: 8px 0;
+  }
+
+  .btn-portfolio-analysis {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    background: var(--purple-dim);
+    color: var(--purple);
+    border: 1px solid rgba(157,110,255,0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-portfolio-analysis:hover { background: rgba(157,110,255,0.15); }
+  .btn-portfolio-analysis:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .portfolio-analysis-result {
+    margin-top: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.7;
+    display: none;
+  }
+
+  .portfolio-analysis-result.show { display: block; }
+
+  /* ── Disagree Modal ── */
+  .btn-disagree {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid rgba(255,184,48,0.3);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .btn-disagree:hover { background: var(--amber-dim); border-color: var(--amber); }
+
+  /* ── Price Target ── */
+  .btn-get-target {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    background: var(--purple-dim);
+    color: var(--purple);
+    border: 1px solid rgba(157,110,255,0.25);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .btn-get-target:hover { background: rgba(157,110,255,0.15); }
+  .btn-get-target:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .target-suggestion {
+    background: var(--purple-dim);
+    border: 1px solid rgba(157,110,255,0.2);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    display: none;
+  }
+
+  .target-suggestion.show { display: block; }
+  .target-suggestion strong { color: var(--purple); }
     .summary-grid { grid-template-columns: 1fr; }
     .pos-top { grid-template-columns: 90px 1fr; grid-template-rows: auto auto; gap: 12px; }
     .pos-price-block { text-align: left; }
@@ -706,12 +959,31 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v1.9</span> · MAY 31, 2026 · 2:30 PM</div>
+      <div class="build-version">BUILD <span>v2.0</span> · JUN 2, 2026 · 9:00 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
       <button class="btn btn-ghost" onclick="openAddModal('user')">+ My Pick</button>
       <button class="btn btn-ghost" onclick="openAddModal('ai-suggested')">+ AI Pick</button>
+    </div>
+  </div>
+
+  <!-- Performance Row -->
+  <div class="perf-row" id="perfRow">
+    <div class="perf-card">
+      <div class="perf-label">Your Picks Performance</div>
+      <div class="perf-periods" id="userPerfPeriods"><div class="perf-loading">Loading...</div></div>
+      <div class="perf-top3" id="userPerfTop3"></div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-label">AI Picks Performance</div>
+      <div class="perf-periods" id="aiPerfPeriods"><div class="perf-loading">Loading...</div></div>
+      <div class="perf-top3" id="aiPerfTop3"></div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-label">Combined Performance</div>
+      <div class="perf-periods" id="combinedPerfPeriods"><div class="perf-loading">Loading...</div></div>
+      <div class="perf-top3" id="combinedPerfTop3"></div>
     </div>
   </div>
 
@@ -754,6 +1026,25 @@
   <div class="suggestion-banner" id="suggestionBanner" style="display:none;">
     <div class="suggestion-title">⟳ Suggested for Review Today</div>
     <div class="suggestion-items" id="suggestionItems"></div>
+  </div>
+
+  <!-- Buy/Sell Signals Panel -->
+  <div class="signals-panel">
+    <div class="signals-header">
+      <div class="signals-title">📊 Current Signals</div>
+      <button class="btn-portfolio-analysis" id="portfolioAnalysisBtn" onclick="runPortfolioAnalysis()">⟳ Portfolio Analysis</button>
+    </div>
+    <div class="signals-grid">
+      <div>
+        <div class="signals-col-label buy">▲ Buy Signals</div>
+        <div id="buySignalsList"><div class="signals-empty">No buy signals — run individual analyses</div></div>
+      </div>
+      <div>
+        <div class="signals-col-label sell">▼ Sell Signals</div>
+        <div id="sellSignalsList"><div class="signals-empty">No sell signals</div></div>
+      </div>
+    </div>
+    <div class="portfolio-analysis-result" id="portfolioAnalysisResult"></div>
   </div>
 
   <!-- Your Positions -->
@@ -937,6 +1228,44 @@
   </div>
 </div>
 
+<!-- Disagree Modal -->
+<div class="modal-overlay" id="disagreeModal">
+  <div class="modal">
+    <h2>Disagree with AI</h2>
+    <input type="hidden" id="disagreePositionId">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:16px;">
+      <div style="font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Current AI Recommendation</div>
+      <div id="disagreeCurrentRec" style="font-size:0.84rem;color:var(--muted);line-height:1.5;"></div>
+    </div>
+    <div class="form-group">
+      <label>Your Reasoning</label>
+      <textarea id="disagreeReason" style="min-height:120px;" placeholder="Explain why you disagree and what you believe the correct assessment is..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitDisagree()">Submit — Reset AI View</button>
+      <button class="btn btn-ghost" onclick="closeDisagreeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Price Target Modal -->
+<div class="modal-overlay" id="targetModal">
+  <div class="modal">
+    <h2>AI Price Target</h2>
+    <input type="hidden" id="targetPositionId">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:16px;" id="targetContext"></div>
+    <div class="target-suggestion" id="targetSuggestion"></div>
+    <div class="form-group" style="margin-top:16px;">
+      <label>Accept or Adjust Target Price ($)</label>
+      <input type="number" id="targetAcceptValue" placeholder="0.00" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="acceptTarget()">Save Target</button>
+      <button class="btn btn-ghost" onclick="closeTargetModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1014,6 +1343,7 @@ async function loadAll() {
     await loadLatestAnalysis();
     await loadNotes();
     renderAll();
+    fetchPerfData(); // non-blocking — runs in background
   } catch (err) {
     showToast('Failed to load: ' + err.message, 'error');
   }
@@ -1088,7 +1418,376 @@ function renderStaleness() {
   }
 }
 
-function expandAndAnalyze(id) {
+function renderSignals() {
+  const buyList  = document.getElementById('buySignalsList');
+  const sellList = document.getElementById('sellSignalsList');
+
+  const buyPositions  = positions.filter(p => analysisMap[p.id]?.buysignal);
+  const sellPositions = positions.filter(p => analysisMap[p.id]?.sellsignal);
+
+  buyList.innerHTML = buyPositions.length ? buyPositions.map(p => {
+    const a = analysisMap[p.id];
+    const rec = (a.recommendation || '').split('.')[0];
+    return `<div class="signal-item">
+      <span class="signal-symbol" onclick="expandAndAnalyze('${p.id}')">${p.symbol}</span>
+      <span class="signal-reason">${rec}</span>
+    </div>`;
+  }).join('') : '<div class="signals-empty">No buy signals</div>';
+
+  sellList.innerHTML = sellPositions.length ? sellPositions.map(p => {
+    const a = analysisMap[p.id];
+    const rec = (a.recommendation || '').split('.')[0];
+    return `<div class="signal-item">
+      <span class="signal-symbol" onclick="expandAndAnalyze('${p.id}')">${p.symbol}</span>
+      <span class="signal-reason">${rec}</span>
+    </div>`;
+  }).join('') : '<div class="signals-empty">No sell signals</div>';
+}
+
+// ── Performance Data (fetched from Yahoo Finance directly from browser) ──
+async function fetchPerfData() {
+  if (!positions.length) return;
+
+  const now   = new Date();
+  const day   = now.getDay();
+  const startOfWeek  = new Date(now); startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1)); startOfWeek.setHours(0,0,0,0);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfYear  = new Date(now.getFullYear(), 0, 1);
+
+  const toUnix = d => Math.floor(d.getTime() / 1000);
+
+  const fetchHistory = async (symbol) => {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${toUnix(startOfYear)}&period2=${toUnix(now)}`;
+      const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const data = await resp.json();
+      const result = data?.chart?.result?.[0];
+      if (!result) return null;
+      const timestamps = result.timestamp || [];
+      const closes     = result.indicators?.quote?.[0]?.close || [];
+      const current    = result.meta?.regularMarketPrice;
+
+      const getPriceAt = (targetDate) => {
+        const targetUnix = toUnix(targetDate);
+        let closest = null, minDiff = Infinity;
+        timestamps.forEach((ts, i) => {
+          const diff = Math.abs(ts - targetUnix);
+          if (diff < minDiff && closes[i]) { minDiff = diff; closest = closes[i]; }
+        });
+        return closest;
+      };
+
+      return {
+        symbol,
+        current,
+        weekStart:  getPriceAt(startOfWeek),
+        monthStart: getPriceAt(startOfMonth),
+        yearStart:  getPriceAt(startOfYear)
+      };
+    } catch { return null; }
+  };
+
+  const results = await Promise.allSettled(positions.map(p => fetchHistory(p.symbol)));
+  const perfMap = {};
+  results.forEach(r => { if (r.status === 'fulfilled' && r.value) perfMap[r.value.symbol] = r.value; });
+
+  const calcPortfolioPerf = (posArr, period) => {
+    let currentVal = 0, startVal = 0;
+    posArr.forEach(p => {
+      const perf = perfMap[p.symbol];
+      if (!perf) return;
+      const shares = parseInt(p.shares);
+      currentVal += (perf.current || 0) * shares;
+      const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
+      startVal += (startPrice || perf.current || 0) * shares;
+    });
+    if (!startVal) return null;
+    return { gain: currentVal - startVal, pct: ((currentVal - startVal) / startVal * 100) };
+  };
+
+  const top3 = (posArr, period) => {
+    return posArr.map(p => {
+      const perf = perfMap[p.symbol];
+      if (!perf || !perf.current) return null;
+      const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
+      if (!startPrice) return null;
+      const pct = ((perf.current - startPrice) / startPrice * 100);
+      return { symbol: p.symbol, pct };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 3);
+  };
+
+  const renderPerfCard = (posArr, periodsId, top3Id) => {
+    const periods = ['week','month','year'];
+    const labels  = ['WTD','MTD','YTD'];
+
+    document.getElementById(periodsId).innerHTML = `
+      <div class="perf-periods">
+        ${periods.map((p, i) => {
+          const r = calcPortfolioPerf(posArr, p);
+          const sign = r && r.gain >= 0 ? '+' : '';
+          const cls  = !r ? 'neutral' : r.gain >= 0 ? 'pos' : 'neg';
+          const val  = r ? `${sign}${r.pct.toFixed(2)}%` : '—';
+          return `<div class="perf-period">
+            <div class="perf-period-label">${labels[i]}</div>
+            <div class="perf-period-value ${cls}">${val}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    const top3Week = top3(posArr, 'week');
+    if (top3Week.length) {
+      document.getElementById(top3Id).innerHTML = `
+        <div class="perf-top3-label">Top 3 This Week</div>
+        ${top3Week.map(t => {
+          const sign = t.pct >= 0 ? '+' : '';
+          const cls  = t.pct >= 0 ? 'pos' : 'neg';
+          return `<div class="perf-top3-item">
+            <span class="perf-top3-symbol">${t.symbol}</span>
+            <span class="perf-top3-gain ${cls}">${sign}${t.pct.toFixed(2)}%</span>
+          </div>`;
+        }).join('')}`;
+    }
+  };
+
+  const userPos    = positions.filter(p => p.positiontype === 'user');
+  const aiPos      = positions.filter(p => p.positiontype === 'ai-suggested');
+  const allPos     = positions;
+
+  renderPerfCard(userPos,  'userPerfPeriods',     'userPerfTop3');
+  renderPerfCard(aiPos,    'aiPerfPeriods',        'aiPerfTop3');
+  renderPerfCard(allPos,   'combinedPerfPeriods',  'combinedPerfTop3');
+}
+
+// ── Portfolio Analysis ──
+async function runPortfolioAnalysis() {
+  const btn = document.getElementById('portfolioAnalysisBtn');
+  const result = document.getElementById('portfolioAnalysisResult');
+
+  const analyzed = positions.filter(p => analysisMap[p.id]);
+  if (!analyzed.length) { showToast('Run individual analyses first', 'info'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⟳ Analyzing...';
+
+  const summary = analyzed.map(p => {
+    const a = analysisMap[p.id];
+    return `${p.symbol} (${p.positiontype}): ${a.thesisstatus} | ${a.recommendation || 'no rec'}`;
+  }).join('\n');
+
+  const portfolioContext = settings ? `Account: ${settings.account_type}, Horizon: ${settings.time_horizon}, Cash: $${fmt(parseFloat(settings.available_cash || 0))}` : '';
+
+  try {
+    const r = await claudeCall('stocksAnalysis', {
+      positions: [{
+        id: 'portfolio',
+        symbol: 'PORTFOLIO',
+        shares: 1,
+        entryPrice: 0,
+        targetPrice: 0,
+        riskLevel: 'medium',
+        thesis: `Portfolio overview analysis. ${portfolioContext}\n\nIndividual position summaries:\n${summary}`,
+        positionType: 'user'
+      }],
+      prompt: `You are reviewing a complete portfolio summary. Based on the individual position analyses provided in the thesis field, provide:
+1. Overall portfolio health assessment (2-3 sentences)
+2. Top 2-3 priorities for the investor this week
+3. Any concerning concentration risks or imbalances
+4. Best cash deployment opportunity if cash is available
+Keep it concise and actionable — this is a portfolio-level synthesis, not individual stock analysis.
+Return a JSON array with ONE object: { "symbol": "PORTFOLIO", "thesisStatus": "on-track", "recommendation": "your synthesis here", "aiNotes": "", "thesisComparison": "", "buySignal": false, "sellSignal": false, "currentPrice": 0, "currentValue": 0, "unrealizedGain": 0, "gainPercent": 0 }`
+    });
+
+    if (r.error) throw new Error(r.error);
+    const analysis = (r.analysis || [])[0];
+    if (analysis?.recommendation) {
+      result.textContent = analysis.recommendation;
+      result.classList.add('show');
+    }
+    showToast('Portfolio analysis complete', 'success');
+  } catch (err) {
+    showToast('Portfolio analysis failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⟳ Portfolio Analysis';
+  }
+}
+
+// ── Disagree with AI ──
+function openDisagreeModal(id) {
+  const pos = positions.find(p => p.id === id);
+  const a   = analysisMap[id];
+  if (!pos || !a) return;
+  document.getElementById('disagreePositionId').value = id;
+  document.getElementById('disagreeCurrentRec').textContent = a.recommendation || 'No recommendation available';
+  document.getElementById('disagreeReason').value = '';
+  document.getElementById('disagreeModal').classList.add('show');
+}
+
+function closeDisagreeModal() {
+  document.getElementById('disagreeModal').classList.remove('show');
+}
+
+async function submitDisagree() {
+  const id     = document.getElementById('disagreePositionId').value;
+  const reason = document.getElementById('disagreeReason').value.trim();
+  const pos    = positions.find(p => p.id === id);
+  const a      = analysisMap[id];
+
+  if (!reason) { showToast('Please enter your reasoning', 'error'); return; }
+
+  const btn = document.querySelector('#disagreeModal .btn-primary');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  try {
+    const r = await claudeCall('stocksAnalysis', {
+      positions: [{
+        id: pos.id,
+        symbol: pos.symbol,
+        shares: parseInt(pos.shares),
+        entryPrice: parseFloat(pos.entryprice),
+        targetPrice: parseFloat(pos.targetprice),
+        riskLevel: pos.risklevel,
+        thesis: (pos.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
+        positionType: pos.positiontype
+      }],
+      prompt: `The investor disagrees with your previous recommendation for ${pos.symbol}.
+
+Your previous recommendation was: "${a.recommendation}"
+
+Investor's reasoning for disagreeing: "${reason}"
+
+Please reconsider your analysis taking the investor's perspective into account. They have 4+ year horizon, 401k account, no tax consequences. Acknowledge their point if valid, or respectfully explain your position if you still hold it. Update your recommendation accordingly.`
+    });
+
+    if (r.error) throw new Error(r.error);
+    const analysis = (r.analysis || [])[0];
+    if (!analysis) throw new Error('No analysis returned');
+
+    // Save updated analysis
+    const saved = await sbInsert('StocksAnalysis', {
+      position_id: pos.id,
+      analysisdate: today(),
+      currentprice: analysis.currentPrice || parseFloat(pos.entryprice),
+      currentvalue: analysis.currentValue || 0,
+      unrealizedgain: analysis.unrealizedGain || 0,
+      gainpercent: analysis.gainPercent || 0,
+      thesisstatus: analysis.thesisStatus || 'on-track',
+      thesiscomparison: analysis.thesisComparison || '',
+      buysignal: analysis.buySignal || false,
+      sellsignal: analysis.sellSignal || false,
+      recommendation: analysis.recommendation || '',
+      ainotes: `[INVESTOR OVERRIDE] Investor disagreed: "${reason}". AI revised view: ${analysis.aiNotes || ''}`
+    });
+
+    // Also save disagreement as a note
+    await sbInsert('StocksNotes', {
+      position_id: pos.id,
+      note: `[Disagreed with AI] ${reason}`,
+      notedate: today()
+    });
+
+    analysisMap[pos.id] = Array.isArray(saved) ? saved[0] : saved;
+    closeDisagreeModal();
+    renderAll();
+    showToast(`${pos.symbol} analysis updated based on your feedback`, 'success');
+  } catch (err) {
+    showToast('Failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit — Reset AI View';
+  }
+}
+
+// ── Price Target ──
+async function openTargetModal(id) {
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+
+  document.getElementById('targetPositionId').value = id;
+  document.getElementById('targetAcceptValue').value = parseFloat(pos.targetprice).toFixed(2);
+  document.getElementById('targetSuggestion').classList.remove('show');
+  document.getElementById('targetSuggestion').innerHTML = '';
+  document.getElementById('targetContext').innerHTML = `
+    <div style="font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">${pos.symbol} · Current Target: $${parseFloat(pos.targetprice).toFixed(2)}</div>
+    <div style="font-size:0.82rem;color:var(--muted);">Click "Get AI Suggestion" to have Claude analyze current prices, analyst consensus, and your thesis to recommend a price target.</div>`;
+
+  document.getElementById('targetModal').classList.add('show');
+
+  // Auto-fetch suggestion
+  await fetchTargetSuggestion(id);
+}
+
+async function fetchTargetSuggestion(id) {
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+
+  const btn = document.querySelector('#targetModal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Fetching...'; }
+
+  const suggEl = document.getElementById('targetSuggestion');
+  suggEl.innerHTML = '<span style="color:var(--dim);font-family:\'Space Mono\',monospace;font-size:0.72rem;">Analyzing current prices and analyst consensus...</span>';
+  suggEl.classList.add('show');
+
+  try {
+    const r = await claudeCall('stocksAnalysis', {
+      positions: [{
+        id: pos.id,
+        symbol: pos.symbol,
+        shares: parseInt(pos.shares),
+        entryPrice: parseFloat(pos.entryprice),
+        targetPrice: parseFloat(pos.targetprice),
+        riskLevel: pos.risklevel,
+        thesis: (pos.thesis || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim(),
+        positionType: pos.positiontype
+      }],
+      prompt: `Based on the current price (fetched from Yahoo Finance), analyst consensus targets, the investor's thesis, and growth trajectory, suggest a realistic 12-month price target for ${pos.symbol}.
+
+In your recommendation field, format it exactly like this:
+"SUGGESTED TARGET: $XXX — [2-3 sentence reasoning including current analyst consensus, growth rate, and how it relates to the thesis]"
+
+The investor has a 4+ year horizon and 401k account. The target should be ambitious but grounded in fundamentals.`
+    });
+
+    if (r.error) throw new Error(r.error);
+    const analysis = (r.analysis || [])[0];
+    if (analysis?.recommendation) {
+      const match = analysis.recommendation.match(/SUGGESTED TARGET:\s*\$?([\d.]+)/i);
+      if (match) {
+        document.getElementById('targetAcceptValue').value = parseFloat(match[1]).toFixed(2);
+      }
+      suggEl.innerHTML = `<strong>AI Suggestion:</strong> ${analysis.recommendation}`;
+    }
+  } catch (err) {
+    suggEl.innerHTML = `<span style="color:var(--red);font-size:0.78rem;">Failed to fetch suggestion: ${err.message}</span>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Target'; }
+  }
+}
+
+function closeTargetModal() {
+  document.getElementById('targetModal').classList.remove('show');
+}
+
+async function acceptTarget() {
+  const id     = document.getElementById('targetPositionId').value;
+  const target = parseFloat(document.getElementById('targetAcceptValue').value);
+  if (!target) { showToast('Please enter a target price', 'error'); return; }
+
+  try {
+    await sbUpdate('StocksPositions', id, { targetprice: target, updated_at: new Date().toISOString() });
+    const pos = positions.find(p => p.id === id);
+    if (pos) pos.targetprice = target;
+    closeTargetModal();
+    renderAll();
+    showToast('Target price updated', 'success');
+  } catch (err) {
+    showToast('Failed to update target: ' + err.message, 'error');
+  }
+}
   // Open the card and scroll to it
   const detail = document.getElementById('detail-' + id);
   const btn    = document.getElementById('expand-' + id);
@@ -1283,6 +1982,7 @@ function renderAll() {
   renderPositions('user', 'userPositions');
   renderPositions('ai-suggested', 'aiPositions');
   renderStaleness();
+  renderSignals();
 }
 
 function renderSummary() {
@@ -1407,7 +2107,10 @@ function buildCard(p) {
       <div class="pos-price">$${price.toFixed(2)}</div>
       <div class="pos-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
     </div>
-    <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+      <button class="btn-analyze btn" id="analyze-btn-${p.id}" onclick="event.stopPropagation(); analyzePosition('${p.id}')">⟳ Analyze</button>
+      <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
+    </div>
   </div>
 
   <div class="pos-detail" id="detail-${p.id}">
@@ -1493,7 +2196,8 @@ function buildCard(p) {
       <span class="risk-badge risk-${p.risklevel}">${p.risklevel} risk</span>
       <span class="target-info" style="margin-left:10px;">Target <span>$${parseFloat(p.targetprice).toFixed(2)}</span></span>
       <span class="footer-spacer"></span>
-      <button class="btn btn-analyze" id="analyze-btn-${p.id}" onclick="analyzePosition('${p.id}')">⟳ Analyze</button>
+      ${a ? `<button class="btn-disagree" onclick="openDisagreeModal('${p.id}')">Disagree</button>` : ''}
+      <button class="btn-get-target" id="target-btn-${p.id}" onclick="openTargetModal('${p.id}')">AI Target</button>
       <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Edit</button>
       <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
     </div>
@@ -1748,6 +2452,8 @@ function showToast(msg, type = 'info') {
 document.getElementById('addModal').addEventListener('click',      function(e) { if (e.target === this) closeModal(); });
 document.getElementById('editModal').addEventListener('click',     function(e) { if (e.target === this) closeEditModal(); });
 document.getElementById('settingsModal').addEventListener('click', function(e) { if (e.target === this) closeSettings(); });
+document.getElementById('disagreeModal').addEventListener('click', function(e) { if (e.target === this) closeDisagreeModal(); });
+document.getElementById('targetModal').addEventListener('click',   function(e) { if (e.target === this) closeTargetModal(); });
 </script>
 </body>
 </html>
