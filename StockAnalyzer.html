@@ -22,9 +22,9 @@
     --surface2: #151d2e;
     --border: #1e2d45;
     --border2: #243550;
-    --text: #e8edf5;
-    --muted: #6b7d96;
-    --dim: #3a4d66;
+    --text: #f0f4fa;
+    --muted: #94a8bf;
+    --dim: #5a6e87;
     --cyan: #00d4ff;
     --cyan-dim: rgba(0,212,255,0.08);
     --green: #00e676;
@@ -959,7 +959,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.0.1</span> · JUN 2, 2026 · 10:00 AM</div>
+      <div class="build-version">BUILD <span>v2.1</span> · JUN 2, 2026 · 6:00 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -989,6 +989,12 @@
 
   <!-- Summary -->
   <div class="summary-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="summary-card combined">
+      <div class="s-label"><span class="s-dot"></span>Total Portfolio Value</div>
+      <div class="s-value" id="combinedValue">—</div>
+      <div class="s-gain neutral" id="combinedGain">—</div>
+      <div class="s-cost" id="combinedCost">—</div>
+    </div>
     <div class="summary-card user">
       <div class="s-label"><span class="s-dot"></span>Your Positions</div>
       <div class="s-value" id="userValue">—</div>
@@ -1000,12 +1006,6 @@
       <div class="s-value" id="aiValue">—</div>
       <div class="s-gain neutral" id="aiGain">—</div>
       <div class="s-cost" id="aiCost">—</div>
-    </div>
-    <div class="summary-card combined">
-      <div class="s-label"><span class="s-dot"></span>Combined Portfolio</div>
-      <div class="s-value" id="combinedValue">—</div>
-      <div class="s-gain neutral" id="combinedGain">—</div>
-      <div class="s-cost" id="combinedCost">—</div>
     </div>
     <div class="summary-card cash">
       <div class="s-label"><span class="s-dot"></span>Available Cash</div>
@@ -1444,25 +1444,39 @@ function renderSignals() {
   }).join('') : '<div class="signals-empty">No sell signals</div>';
 }
 
-// ── Performance Data (fetched from Yahoo Finance directly from browser) ──
+// ── Performance Data (routed through Worker to avoid CORS) ──
 async function fetchPerfData() {
   if (!positions.length) return;
 
-  const now   = new Date();
-  const day   = now.getDay();
+  const now          = new Date();
+  const day          = now.getDay();
   const startOfWeek  = new Date(now); startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1)); startOfWeek.setHours(0,0,0,0);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfYear  = new Date(now.getFullYear(), 0, 1);
-
-  const toUnix = d => Math.floor(d.getTime() / 1000);
+  const toUnix       = d => Math.floor(d.getTime() / 1000);
 
   const fetchHistory = async (symbol) => {
     try {
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${toUnix(startOfYear)}&period2=${toUnix(now)}`;
-      const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-      const data = await resp.json();
+      // Route through Worker using FETCH_URL to avoid CORS
+      const resp = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: APP_ID, method: 'FETCH_URL', url })
+      });
+      const wrapper = await resp.json();
+      if (!wrapper.base64) return null;
+
+      // Decode base64 response
+      const binary = atob(wrapper.base64);
+      const bytes  = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const text = new TextDecoder().decode(bytes);
+      const data = JSON.parse(text);
+
       const result = data?.chart?.result?.[0];
       if (!result) return null;
+
       const timestamps = result.timestamp || [];
       const closes     = result.indicators?.quote?.[0]?.close || [];
       const current    = result.meta?.regularMarketPrice;
@@ -1990,6 +2004,7 @@ function renderAll() {
 function renderSummary() {
   const userPos = positions.filter(p => p.positiontype === 'user');
   const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
+  const cash    = settings ? parseFloat(settings.available_cash || 0) : 0;
 
   const calcTotals = (arr) => {
     let value = 0, cost = 0;
@@ -2004,8 +2019,15 @@ function renderSummary() {
 
   const u = calcTotals(userPos);
   const a = calcTotals(aiPos);
-  const c = { value: u.value + a.value, cost: u.cost + a.cost, gain: u.gain + a.gain,
-    pct: (u.cost + a.cost) > 0 ? ((u.gain + a.gain) / (u.cost + a.cost) * 100) : 0 };
+  const combinedStocks = u.value + a.value;
+  const combinedCost   = u.cost + a.cost;
+  const combinedGain   = combinedStocks - combinedCost;
+  const c = {
+    value: combinedStocks + cash,
+    cost:  combinedCost,
+    gain:  combinedGain,
+    pct:   combinedCost > 0 ? (combinedGain / combinedCost * 100) : 0
+  };
 
   setSummary('user', u);
   setSummary('ai', a);
@@ -2096,23 +2118,37 @@ function buildCard(p) {
   return `
 <div class="pos-card" id="card-${p.id}">
   <div class="pos-top" onclick="toggleCard('${p.id}')">
-    <div>
-      <div class="pos-symbol">${p.symbol}${staleBadge}</div>
-      <div class="pos-meta">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg entry${p.purchasedate ? ' · ' + p.purchasedate : ''}</div>
-      <div class="${lastAnalyzedClass}">${lastAnalyzedText}</div>
+
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="pos-symbol">${p.symbol}${staleBadge}</div>
+          <div class="pos-price" style="font-size:1.1rem;">$${price.toFixed(2)}</div>
+          <div class="pos-gain ${gainClass}" style="font-size:0.82rem;">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <button class="btn-analyze btn" id="analyze-btn-${p.id}" onclick="event.stopPropagation(); analyzePosition('${p.id}')">⟳ Analyze</button>
+          <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:20px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);">${parseInt(p.shares)} shares · $${parseFloat(p.entryprice).toFixed(2)} avg entry${p.purchasedate ? ' · ' + p.purchasedate : ''}</div>
+        <div style="display:flex;gap:14px;">
+          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Value </span><span style="color:var(--text);font-weight:700;">$${fmt(value)}</span></span>
+          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Cost </span><span style="color:var(--text);">$${fmt(cost)}</span></span>
+          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Target </span><span style="color:var(--purple);font-weight:700;">$${parseFloat(p.targetprice).toFixed(2)}</span></span>
+          <span style="font-family:'Space Mono',monospace;font-size:0.7rem;"><span style="color:var(--dim);">Upside </span><span style="color:var(--purple);">${upside}%</span></span>
+        </div>
+        <div class="${lastAnalyzedClass}">${lastAnalyzedText}</div>
+      </div>
+
+      <div class="pos-rec-block" style="padding:0;">
+        <div class="rec-pill ${recPillClass}" style="margin-bottom:6px;">${recPillText}</div>
+        <ul class="rec-bullets">${bulletHTML}</ul>
+      </div>
     </div>
-    <div class="pos-rec-block">
-      <div class="rec-pill ${recPillClass}">${recPillText}</div>
-      <ul class="rec-bullets">${bulletHTML}</ul>
-    </div>
-    <div class="pos-price-block">
-      <div class="pos-price">$${price.toFixed(2)}</div>
-      <div class="pos-gain ${gainClass}">${gainSign}$${fmt(Math.abs(gain))} (${gainSign}${gainPct.toFixed(2)}%)</div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
-      <button class="btn-analyze btn" id="analyze-btn-${p.id}" onclick="event.stopPropagation(); analyzePosition('${p.id}')">⟳ Analyze</button>
-      <button class="pos-expand-btn" id="expand-${p.id}" onclick="event.stopPropagation(); toggleCard('${p.id}')">▼</button>
-    </div>
+
   </div>
 
   <div class="pos-detail" id="detail-${p.id}">
