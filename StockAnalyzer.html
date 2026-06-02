@@ -23,8 +23,8 @@
     --border: #1e2d45;
     --border2: #243550;
     --text: #f0f4fa;
-    --muted: #94a8bf;
-    --dim: #5a6e87;
+    --muted: #a8bcd0;
+    --dim: #6a7f96;
     --cyan: #00d4ff;
     --cyan-dim: rgba(0,212,255,0.08);
     --green: #00e676;
@@ -724,7 +724,32 @@
   .btn-analyze:hover { background: #33ddff; transform: translateY(-1px); }
   .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  /* ── Performance Row ── */
+  /* ── Explicit readability overrides ── */
+  .rec-bullets li { color: #c0d0e0 !important; }
+  .detail-text { color: #c0d0e0 !important; }
+  .thesis-text { color: #c0d0e0 !important; }
+  .pos-metric-value { color: #e8f0fa !important; }
+  .pos-metric-label { color: #7a90a8 !important; }
+  .s-label { color: #8aafcc !important; }
+  .s-cost { color: #7a90a8 !important; }
+  .perf-label { color: #8aafcc !important; }
+  .perf-period-label { color: #7a90a8 !important; }
+  .perf-top3-label { color: #7a90a8 !important; }
+  .signals-title { color: #e8f0fa !important; }
+  .signal-reason { color: #c0d0e0 !important; }
+  .detail-label { color: #7a90a8 !important; }
+  .detail-value { color: #e8f0fa !important; }
+  .note-item { color: #c0d0e0 !important; }
+  .note-date { color: #7a90a8 !important; }
+  .analysis-comparison { color: #c0d0e0 !important; }
+  .last-analyzed { color: #7a90a8 !important; }
+  .last-analyzed.stale { color: var(--amber) !important; }
+  .detail-section-label { color: #7a90a8 !important; }
+  .analysis-date { color: #7a90a8 !important; }
+  .lot-summary { color: #c0d0e0 !important; }
+  .build-version { color: #7a90a8 !important; }
+  .header p { color: #8aafcc !important; }
+  .portfolio-analysis-result { color: #c0d0e0 !important; }
   .perf-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -997,7 +1022,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.2</span> · JUN 2, 2026 · 7:00 PM</div>
+      <div class="build-version">BUILD <span>v2.3</span> · JUN 2, 2026 · 8:30 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1486,131 +1511,92 @@ function renderSignals() {
 async function fetchPerfData() {
   if (!positions.length) return;
 
-  const now          = new Date();
-  const day          = now.getDay();
-  const startOfWeek  = new Date(now); startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1)); startOfWeek.setHours(0,0,0,0);
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfYear  = new Date(now.getFullYear(), 0, 1);
-  const toUnix       = d => Math.floor(d.getTime() / 1000);
+  const now        = new Date();
+  const yearStart  = new Date(now.getFullYear(), 0, 1);
+  const period1    = Math.floor(yearStart.getTime() / 1000);
+  const symbols    = [...new Set(positions.map(p => p.symbol))];
 
-  const fetchHistory = async (symbol) => {
-    try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${toUnix(startOfYear)}&period2=${toUnix(now)}`;
-      // Route through Worker using FETCH_URL to avoid CORS
-      const resp = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appId: APP_ID, method: 'FETCH_URL', url })
-      });
-      const wrapper = await resp.json();
-      if (!wrapper.base64) return null;
-
-      // Decode base64 response
-      const binary = atob(wrapper.base64);
-      const bytes  = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const text = new TextDecoder().decode(bytes);
-      const data = JSON.parse(text);
-
-      const result = data?.chart?.result?.[0];
-      if (!result) return null;
-
-      const timestamps = result.timestamp || [];
-      const closes     = result.indicators?.quote?.[0]?.close || [];
-      const current    = result.meta?.regularMarketPrice;
-
-      const getPriceAt = (targetDate) => {
-        const targetUnix = toUnix(targetDate);
-        let closest = null, minDiff = Infinity;
-        timestamps.forEach((ts, i) => {
-          const diff = Math.abs(ts - targetUnix);
-          if (diff < minDiff && closes[i]) { minDiff = diff; closest = closes[i]; }
-        });
-        return closest;
-      };
-
-      return {
-        symbol,
-        current,
-        weekStart:  getPriceAt(startOfWeek),
-        monthStart: getPriceAt(startOfMonth),
-        yearStart:  getPriceAt(startOfYear)
-      };
-    } catch { return null; }
-  };
-
-  const results = await Promise.allSettled(positions.map(p => fetchHistory(p.symbol)));
-  const perfMap = {};
-  results.forEach(r => { if (r.status === 'fulfilled' && r.value) perfMap[r.value.symbol] = r.value; });
-
-  const calcPortfolioPerf = (posArr, period) => {
-    let currentVal = 0, startVal = 0;
-    posArr.forEach(p => {
-      const perf = perfMap[p.symbol];
-      if (!perf) return;
-      const shares = parseInt(p.shares);
-      currentVal += (perf.current || 0) * shares;
-      const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
-      startVal += (startPrice || perf.current || 0) * shares;
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appId: APP_ID, method: 'STOCK_HISTORY', symbols, period1 })
     });
-    if (!startVal) return null;
-    return { gain: currentVal - startVal, pct: ((currentVal - startVal) / startVal * 100) };
-  };
+    const data = await resp.json();
+    if (!data.perfData) return;
 
-  const top3 = (posArr, period) => {
-    return posArr.map(p => {
-      const perf = perfMap[p.symbol];
-      if (!perf || !perf.current) return null;
-      const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
-      if (!startPrice) return null;
-      const pct = ((perf.current - startPrice) / startPrice * 100);
-      return { symbol: p.symbol, pct };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.pct - a.pct)
-    .slice(0, 3);
-  };
+    const perfMap = data.perfData;
 
-  const renderPerfCard = (posArr, periodsId, top3Id) => {
-    const periods = ['week','month','year'];
-    const labels  = ['WTD','MTD','YTD'];
+    const calcPortfolioPerf = (posArr, period) => {
+      let currentVal = 0, startVal = 0;
+      posArr.forEach(p => {
+        const perf = perfMap[p.symbol];
+        if (!perf) return;
+        const shares     = parseInt(p.shares);
+        const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
+        currentVal += (perf.current || 0) * shares;
+        startVal   += (startPrice || perf.current || 0) * shares;
+      });
+      if (!startVal) return null;
+      return { gain: currentVal - startVal, pct: ((currentVal - startVal) / startVal * 100) };
+    };
 
-    document.getElementById(periodsId).innerHTML = `
-      <div class="perf-periods">
-        ${periods.map((p, i) => {
-          const r = calcPortfolioPerf(posArr, p);
-          const sign = r && r.gain >= 0 ? '+' : '';
-          const cls  = !r ? 'neutral' : r.gain >= 0 ? 'pos' : 'neg';
-          const val  = r ? `${sign}${r.pct.toFixed(2)}%` : '—';
-          return `<div class="perf-period">
-            <div class="perf-period-label">${labels[i]}</div>
-            <div class="perf-period-value ${cls}">${val}</div>
-          </div>`;
-        }).join('')}
-      </div>`;
+    const top3 = (posArr, period) => {
+      return posArr.map(p => {
+        const perf = perfMap[p.symbol];
+        if (!perf || !perf.current) return null;
+        const startPrice = period === 'week' ? perf.weekStart : period === 'month' ? perf.monthStart : perf.yearStart;
+        if (!startPrice) return null;
+        return { symbol: p.symbol, pct: ((perf.current - startPrice) / startPrice * 100) };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 3);
+    };
 
-    const top3Week = top3(posArr, 'week');
-    if (top3Week.length) {
-      document.getElementById(top3Id).innerHTML = `
-        <div class="perf-top3-label">Top 3 This Week</div>
-        ${top3Week.map(t => {
-          const sign = t.pct >= 0 ? '+' : '';
-          const cls  = t.pct >= 0 ? 'pos' : 'neg';
-          return `<div class="perf-top3-item">
-            <span class="perf-top3-symbol">${t.symbol}</span>
-            <span class="perf-top3-gain ${cls}">${sign}${t.pct.toFixed(2)}%</span>
-          </div>`;
-        }).join('')}`;
-    }
-  };
+    const renderPerfCard = (posArr, periodsId, top3Id) => {
+      const periods = ['week', 'month', 'year'];
+      const labels  = ['WTD', 'MTD', 'YTD'];
 
-  const userPos    = positions.filter(p => p.positiontype === 'user');
-  const aiPos      = positions.filter(p => p.positiontype === 'ai-suggested');
-  const allPos     = positions;
+      document.getElementById(periodsId).innerHTML = `
+        <div class="perf-periods">
+          ${periods.map((p, i) => {
+            const r    = calcPortfolioPerf(posArr, p);
+            const sign = r && r.gain >= 0 ? '+' : '';
+            const cls  = !r ? 'neutral' : r.gain >= 0 ? 'pos' : 'neg';
+            const val  = r ? `${sign}${r.pct.toFixed(2)}%` : '—';
+            return `<div class="perf-period">
+              <div class="perf-period-label">${labels[i]}</div>
+              <div class="perf-period-value ${cls}">${val}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
 
-  renderPerfCard(userPos,  'userPerfPeriods',     'userPerfTop3');
-  renderPerfCard(aiPos,    'aiPerfPeriods',        'aiPerfTop3');
-  renderPerfCard(allPos,   'combinedPerfPeriods',  'combinedPerfTop3');
+      const top3Week = top3(posArr, 'week');
+      if (top3Week.length) {
+        document.getElementById(top3Id).innerHTML = `
+          <div class="perf-top3-label">Top 3 This Week</div>
+          ${top3Week.map(t => {
+            const sign = t.pct >= 0 ? '+' : '';
+            const cls  = t.pct >= 0 ? 'pos' : 'neg';
+            return `<div class="perf-top3-item">
+              <span class="perf-top3-symbol">${t.symbol}</span>
+              <span class="perf-top3-gain ${cls}">${sign}${t.pct.toFixed(2)}%</span>
+            </div>`;
+          }).join('')}`;
+      }
+    };
+
+    const userPos = positions.filter(p => p.positiontype === 'user');
+    const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
+
+    renderPerfCard(userPos,   'userPerfPeriods',    'userPerfTop3');
+    renderPerfCard(aiPos,     'aiPerfPeriods',       'aiPerfTop3');
+    renderPerfCard(positions, 'combinedPerfPeriods', 'combinedPerfTop3');
+
+  } catch (err) {
+    console.warn('Performance data unavailable:', err.message);
+  }
 }
 
 // ── Portfolio Analysis ──
