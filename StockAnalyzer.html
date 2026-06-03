@@ -1162,7 +1162,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.4</span> · JUN 3, 2026 · 10:00 AM</div>
+      <div class="build-version">BUILD <span>v2.4.1</span> · JUN 3, 2026 · 11:00 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -2578,7 +2578,7 @@ async function confirmSale() {
       saleprice:  salePrice,
       saledate:   saleDate,
       status:     isFullSale ? 'sold' : 'active',
-      shares:     isFullSale ? sharesSold : remainingShares,
+      shares:     isFullSale ? 0 : remainingShares,
       updated_at: new Date().toISOString()
     };
 
