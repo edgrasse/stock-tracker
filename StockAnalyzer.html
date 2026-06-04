@@ -1271,7 +1271,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.5.1</span> · JUN 4, 2026 · 9:00 AM</div>
+      <div class="build-version">BUILD <span>v2.6</span> · JUN 4, 2026 · 10:00 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1921,7 +1921,9 @@ async function runPortfolioAnalysis() {
 
   const summary = analyzed.map(p => {
     const a = analysisMap[p.id];
-    return `${p.symbol} (${p.positiontype}): ${a.thesisstatus} | ${a.recommendation || 'no rec'}`;
+    const sig = a.buysignal ? '[BUY]' : a.sellsignal ? '[SELL]' : '';
+    const shortSummary = a.summary || (a.recommendation || '').substring(0, 80);
+    return `${p.symbol} ${sig}: ${a.thesisstatus} — ${shortSummary}`;
   }).join('\n');
 
   const portfolioContext = settings ? `Account: ${settings.account_type}, Horizon: ${settings.time_horizon}, Cash: $${fmt(parseFloat(settings.available_cash || 0))}` : '';
@@ -2198,6 +2200,7 @@ CRITICAL: Tax-advantaged 401k, 4+ year horizon. Never recommend selling based on
       unrealizedgain: analysis.unrealizedGain || 0,
       gainpercent: analysis.gainPercent || 0,
       thesisstatus: analysis.thesisStatus || 'on-track',
+      summary: analysis.summary || '',
       thesiscomparison: analysis.thesisComparison || '',
       buysignal: analysis.buySignal || false,
       sellsignal: analysis.sellSignal || false,
@@ -2518,9 +2521,13 @@ function buildCard(p) {
     else if (rec.includes('watch') || rec.includes('monitor')) { recPillClass = 'rec-watch'; recPillText = '◉ Watch'; }
     else                    { recPillClass = 'rec-hold';  recPillText = '● Hold'; }
 
-    // Extract 2-3 bullet points from recommendation + aiNotes
-    const fullText = (a.recommendation || '') + ' ' + (a.ainotes || '');
-    recBullets = extractBullets(fullText, a.thesiscomparison || '');
+    // Use saved summary if available, otherwise fall back to extractBullets
+    if (a.summary) {
+      recBullets = [a.summary];
+    } else {
+      const fullText = (a.recommendation || '') + ' ' + (a.ainotes || '');
+      recBullets = extractBullets(fullText, a.thesiscomparison || '');
+    }
   }
 
   const bulletHTML = recBullets.map(b => `<li>${b}</li>`).join('');
