@@ -1271,7 +1271,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.5</span> · JUN 3, 2026 · 12:00 PM</div>
+      <div class="build-version">BUILD <span>v2.5.1</span> · JUN 4, 2026 · 9:00 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1944,7 +1944,8 @@ async function runPortfolioAnalysis() {
 3. Any concerning concentration risks or imbalances
 4. Best cash deployment opportunity if cash is available
 Keep it concise and actionable — this is a portfolio-level synthesis, not individual stock analysis.
-Return a JSON array with ONE object: { "symbol": "PORTFOLIO", "thesisStatus": "on-track", "recommendation": "your synthesis here", "aiNotes": "", "thesisComparison": "", "buySignal": false, "sellSignal": false, "currentPrice": 0, "currentValue": 0, "unrealizedGain": 0, "gainPercent": 0 }`
+Return a JSON array with ONE object: { "symbol": "PORTFOLIO", "thesisStatus": "on-track", "recommendation": "your synthesis here", "aiNotes": "", "thesisComparison": "", "buySignal": false, "sellSignal": false, "currentPrice": 0, "currentValue": 0, "unrealizedGain": 0, "gainPercent": 0 }`,
+      skipPriceFetch: true
     });
 
     if (r.error) throw new Error(r.error);
@@ -2007,7 +2008,8 @@ Your previous recommendation was: "${a.recommendation}"
 
 Investor's reasoning for disagreeing: "${reason}"
 
-Please reconsider your analysis taking the investor's perspective into account. They have 4+ year horizon, 401k account, no tax consequences. Acknowledge their point if valid, or respectfully explain your position if you still hold it. Update your recommendation accordingly.`
+Please reconsider your analysis taking the investor's perspective into account. They have 4+ year horizon, 401k account, no tax consequences. Acknowledge their point if valid, or respectfully explain your position if you still hold it. Update your recommendation accordingly.`,
+      skipPriceFetch: true
     });
 
     if (r.error) throw new Error(r.error);
