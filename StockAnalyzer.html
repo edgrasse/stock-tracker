@@ -726,7 +726,116 @@
   .btn-analyze:hover { background: #33ddff; transform: translateY(-1px); }
   .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  /* ── Sold Position ── */
+  /* ── Sold Positions Section ── */
+  .sold-section { margin-bottom: 48px; margin-top: 8px; }
+
+  .sold-section .section-title { color: var(--dim); }
+
+  .sold-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    opacity: 0.75;
+  }
+
+  .sold-card:hover { border-color: var(--border2); opacity: 1; }
+
+  .sold-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sold-card-symbol {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--dim);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .sold-card-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 3px;
+    background: rgba(255,75,110,0.1);
+    color: var(--red);
+    border: 1px solid rgba(255,75,110,0.25);
+    flex-shrink: 0;
+  }
+
+  .sold-card-verdict {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .sold-card-verdict.good { color: var(--green); }
+  .sold-card-verdict.bad  { color: var(--red); }
+  .sold-card-verdict.neutral { color: var(--dim); }
+
+  .sold-card-expand {
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    transition: color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .sold-card-expand:hover { color: var(--muted); }
+  .sold-card-expand.open  { transform: rotate(180deg); }
+
+  .sold-card-detail {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    background: var(--surface2);
+  }
+
+  .sold-card-detail.open { display: block; }
+
+  .sold-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .sold-detail-cell {
+    background: var(--surface);
+    padding: 10px 14px;
+    text-align: center;
+  }
+
+  .sold-detail-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .sold-detail-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
   .sold-badge {
     display: inline-block;
     background: rgba(255,75,110,0.12);
@@ -1162,7 +1271,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.4.1</span> · JUN 3, 2026 · 11:00 AM</div>
+      <div class="build-version">BUILD <span>v2.5</span> · JUN 3, 2026 · 12:00 PM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1297,6 +1406,17 @@
         <button class="btn btn-outline btn-sm" onclick="openAddModal('ai-suggested')">+ Add AI Suggestion</button>
       </div>
     </div>
+  </div>
+
+  <!-- Sold Positions -->
+  <div class="sold-section" id="soldSection" style="display:none;">
+    <div class="section-header">
+      <div class="section-title">
+        SOLD POSITIONS
+        <span class="s-badge" style="background:rgba(255,75,110,0.1);color:var(--red);border:1px solid rgba(255,75,110,0.2);" id="soldCount">0</span>
+      </div>
+    </div>
+    <div class="positions-list" id="soldPositions"></div>
   </div>
 
 </div>
@@ -2210,13 +2330,14 @@ function renderAll() {
   renderCash();
   renderPositions('user', 'userPositions');
   renderPositions('ai-suggested', 'aiPositions');
+  renderSoldPositions();
   renderStaleness();
   renderSignals();
 }
 
 function renderSummary() {
-  const userPos = positions.filter(p => p.positiontype === 'user');
-  const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested');
+  const userPos = positions.filter(p => p.positiontype === 'user' && p.status !== 'sold');
+  const aiPos   = positions.filter(p => p.positiontype === 'ai-suggested' && p.status !== 'sold');
   const cash    = settings ? parseFloat(settings.available_cash || 0) : 0;
 
   const calcTotals = (arr) => {
@@ -2246,8 +2367,8 @@ function renderSummary() {
   setSummary('ai', a);
   setSummary('combined', c);
 
-  document.getElementById('userCount').textContent = userPos.length;
-  document.getElementById('aiCount').textContent   = aiPos.length;
+  document.getElementById('userCount').textContent = userPos.filter(p => p.status !== 'sold').length;
+  document.getElementById('aiCount').textContent   = aiPos.filter(p => p.status !== 'sold').length;
 }
 
 function setSummary(type, m) {
@@ -2262,7 +2383,7 @@ function setSummary(type, m) {
 
 function renderPositions(type, containerId) {
   const container = document.getElementById(containerId);
-  const filtered  = positions.filter(p => p.positiontype === type);
+  const filtered  = positions.filter(p => p.positiontype === type && p.status !== 'sold');
   if (!filtered.length) {
     const label = type === 'user' ? 'Your Pick' : 'AI Suggestion';
     container.innerHTML = `<div class="empty-state"><p>No ${type === 'user' ? 'positions' : 'AI suggestions'} yet.</p>
@@ -2272,7 +2393,92 @@ function renderPositions(type, containerId) {
   container.innerHTML = filtered.map(p => buildCard(p)).join('');
 }
 
-// ── Build Card ──
+function renderSoldPositions() {
+  const soldPos   = positions.filter(p => p.status === 'sold');
+  const section   = document.getElementById('soldSection');
+  const container = document.getElementById('soldPositions');
+  const countEl   = document.getElementById('soldCount');
+
+  if (!soldPos.length) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  countEl.textContent   = soldPos.length;
+  container.innerHTML   = soldPos.map(p => buildSoldCard(p)).join('');
+}
+
+function buildSoldCard(p) {
+  const a          = analysisMap[p.id];
+  const salePrice  = parseFloat(p.saleprice || 0);
+  const soldShares = parseInt(p.sharessold || 0);
+  const currentPrice = a ? parseFloat(a.currentprice) : salePrice;
+
+  // Verdict
+  let verdictHTML = '';
+  let verdictClass = 'neutral';
+  if (salePrice > 0 && soldShares > 0) {
+    const proceeds   = salePrice * soldShares;
+    const currentVal = currentPrice * soldShares;
+    const diff       = proceeds - currentVal;
+    const diffPct    = proceeds > 0 ? ((diff / proceeds) * 100).toFixed(1) : 0;
+    const sign       = diff >= 0 ? '+' : '';
+    verdictClass     = diff >= 0 ? 'good' : 'bad';
+    verdictHTML      = diff >= 0
+      ? `✓ Right call · saved ${sign}$${fmt(Math.abs(diff))} (${sign}${diffPct}%)`
+      : `✗ Left $${fmt(Math.abs(diff))} (${Math.abs(diffPct)}%) on the table`;
+  }
+
+  // Detail section
+  const detailHTML = `
+    <div class="sold-detail-grid">
+      <div class="sold-detail-cell">
+        <div class="sold-detail-label">Sold</div>
+        <div class="sold-detail-value">${soldShares} shares</div>
+      </div>
+      <div class="sold-detail-cell">
+        <div class="sold-detail-label">Sale Price</div>
+        <div class="sold-detail-value">$${salePrice.toFixed(2)}</div>
+      </div>
+      <div class="sold-detail-cell">
+        <div class="sold-detail-label">Current Price</div>
+        <div class="sold-detail-value">$${currentPrice.toFixed(2)}</div>
+      </div>
+      <div class="sold-detail-cell">
+        <div class="sold-detail-label">Proceeds</div>
+        <div class="sold-detail-value">$${fmt(salePrice * soldShares)}</div>
+      </div>
+    </div>
+    <div style="font-family:'Space Mono',monospace;font-size:0.72rem;color:#c0d0e0;margin-bottom:10px;">
+      Entry: $${parseFloat(p.entryprice).toFixed(2)} · Sold: $${salePrice.toFixed(2)} · Now: $${currentPrice.toFixed(2)}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-analyze btn btn-sm" id="analyze-btn-${p.id}" onclick="analyzePosition('${p.id}')">⟳ Update Tracking</button>
+      <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
+    </div>`;
+
+  return `
+<div class="sold-card" id="card-${p.id}">
+  <div class="sold-card-top" onclick="toggleSoldCard('${p.id}')">
+    <div class="sold-card-symbol">${p.symbol}</div>
+    <div class="sold-card-badge">SOLD · ${p.saledate || ''}</div>
+    <div class="sold-card-verdict ${verdictClass}">${verdictHTML}</div>
+    <button class="sold-card-expand" id="sold-expand-${p.id}" onclick="event.stopPropagation(); toggleSoldCard('${p.id}')">▼</button>
+  </div>
+  <div class="sold-card-detail" id="sold-detail-${p.id}">
+    ${detailHTML}
+  </div>
+</div>`;
+}
+
+function toggleSoldCard(id) {
+  const detail = document.getElementById('sold-detail-' + id);
+  const btn    = document.getElementById('sold-expand-' + id);
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
 function buildCard(p) {
   const a       = analysisMap[p.id];
   const notes   = notesMap[p.id] || [];
