@@ -876,7 +876,22 @@
   .sold-tracking-value.good { color: var(--green); }
   .sold-tracking-value.bad  { color: var(--red); }
 
-  .btn-record-sale {
+  .btn-add-shares {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    background: rgba(0,212,255,0.08);
+    color: var(--cyan);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .btn-add-shares:hover { background: rgba(0,212,255,0.15); }
     font-family: 'Space Mono', monospace;
     font-size: 0.62rem;
     font-weight: 700;
@@ -1271,7 +1286,7 @@
     <div>
       <h1>STOCK <span>ANALYZER</span></h1>
       <p id="headerDate">LOADING...</p>
-      <div class="build-version">BUILD <span>v2.6</span> · JUN 4, 2026 · 10:00 AM</div>
+      <div class="build-version">BUILD <span>v2.7</span> · JUN 4, 2026 · 11:00 AM</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-settings" onclick="openSettings()" title="Portfolio Settings">⚙</button>
@@ -1634,6 +1649,36 @@
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="confirmSale()">Record Sale</button>
       <button class="btn btn-ghost" onclick="closeSaleModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Shares Modal -->
+<div class="modal-overlay" id="addSharesModal">
+  <div class="modal">
+    <h2>Add Shares</h2>
+    <input type="hidden" id="addSharesPositionId">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:16px;" id="addSharesPositionInfo"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Shares Added</label>
+        <input type="number" id="addSharesCount" placeholder="0" min="1" oninput="updateAddSharesTotal()">
+      </div>
+      <div class="form-group">
+        <label>Price Per Share ($)</label>
+        <input type="number" id="addSharesPrice" placeholder="0.00" step="0.01" oninput="updateAddSharesTotal()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Date Purchased</label>
+      <input type="date" id="addSharesDate">
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:0.78rem;color:#c0d0e0;" id="addSharesTotal">
+      Enter shares and price to see new totals
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmAddShares()">Add Shares</button>
+      <button class="btn btn-ghost" onclick="closeAddSharesModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -2137,6 +2182,91 @@ async function acceptTarget() {
     showToast('Target price updated', 'success');
   } catch (err) {
     showToast('Failed to update target: ' + err.message, 'error');
+  }
+}
+
+// ── Add Shares ──
+function openAddSharesModal(id) {
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+  document.getElementById('addSharesPositionId').value = id;
+  document.getElementById('addSharesDate').value = today();
+  document.getElementById('addSharesCount').value = '';
+  document.getElementById('addSharesPrice').value = '';
+  document.getElementById('addSharesTotal').textContent = 'Enter shares and price to see new totals';
+  document.getElementById('addSharesPositionInfo').innerHTML = `
+    <div style="font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">${pos.symbol}</div>
+    <div style="font-size:0.82rem;color:#c0d0e0;">Currently holding <strong>${pos.shares} shares</strong> at avg entry <strong>$${parseFloat(pos.entryprice).toFixed(2)}</strong></div>`;
+  document.getElementById('addSharesModal').classList.add('show');
+}
+
+function closeAddSharesModal() {
+  document.getElementById('addSharesModal').classList.remove('show');
+}
+
+function updateAddSharesTotal() {
+  const id        = document.getElementById('addSharesPositionId').value;
+  const pos       = positions.find(p => p.id === id);
+  if (!pos) return;
+  const newShares = parseFloat(document.getElementById('addSharesCount').value) || 0;
+  const newPrice  = parseFloat(document.getElementById('addSharesPrice').value) || 0;
+  const el        = document.getElementById('addSharesTotal');
+  if (newShares > 0 && newPrice > 0) {
+    const existingShares = parseInt(pos.shares);
+    const existingCost   = existingShares * parseFloat(pos.entryprice);
+    const newCost        = newShares * newPrice;
+    const totalShares    = existingShares + newShares;
+    const newAvgEntry    = (existingCost + newCost) / totalShares;
+    el.innerHTML = `Adding ${newShares} shares @ $${newPrice.toFixed(2)}<br>New total: <strong>${totalShares} shares</strong> · New avg entry: <strong>$${newAvgEntry.toFixed(2)}</strong>`;
+  } else {
+    el.textContent = 'Enter shares and price to see new totals';
+  }
+}
+
+async function confirmAddShares() {
+  const id        = document.getElementById('addSharesPositionId').value;
+  const newShares = parseInt(document.getElementById('addSharesCount').value);
+  const newPrice  = parseFloat(document.getElementById('addSharesPrice').value);
+  const newDate   = document.getElementById('addSharesDate').value;
+  const pos       = positions.find(p => p.id === id);
+
+  if (!pos || !newShares || !newPrice || !newDate) {
+    showToast('Please fill in all fields', 'error'); return;
+  }
+
+  try {
+    const existingShares = parseInt(pos.shares);
+    const existingCost   = existingShares * parseFloat(pos.entryprice);
+    const addedCost      = newShares * newPrice;
+    const totalShares    = existingShares + newShares;
+    const newAvgEntry    = (existingCost + addedCost) / totalShares;
+
+    let lots = [];
+    try { lots = JSON.parse(pos.lots || '[]'); } catch(e) {}
+    lots.push({ date: newDate, shares: newShares, price: newPrice });
+
+    await sbUpdate('StocksPositions', id, {
+      shares:     totalShares,
+      entryprice: parseFloat(newAvgEntry.toFixed(4)),
+      lots:       JSON.stringify(lots),
+      updated_at: new Date().toISOString()
+    });
+
+    pos.shares     = totalShares;
+    pos.entryprice = parseFloat(newAvgEntry.toFixed(4));
+    pos.lots       = JSON.stringify(lots);
+
+    await sbInsert('StocksNotes', {
+      position_id: id,
+      note: `[Added Shares] ${newShares} shares @ $${newPrice.toFixed(2)} on ${newDate}. New total: ${totalShares} shares, new avg entry: $${newAvgEntry.toFixed(2)}.`,
+      notedate: newDate
+    });
+
+    closeAddSharesModal();
+    renderAll();
+    showToast(`${pos.symbol} updated — ${totalShares} shares @ $${newAvgEntry.toFixed(2)} avg`, 'success');
+  } catch (err) {
+    showToast('Failed to add shares: ' + err.message, 'error');
   }
 }
 
@@ -2710,6 +2840,7 @@ function buildCard(p) {
       <span class="footer-spacer"></span>
       ${a ? `<button class="btn-disagree" onclick="openDisagreeModal('${p.id}')">Disagree</button>` : ''}
       <button class="btn-get-target" id="target-btn-${p.id}" onclick="openTargetModal('${p.id}')">AI Target</button>
+      <button class="btn-add-shares" onclick="openAddSharesModal('${p.id}')">+ Shares</button>
       <button class="btn-record-sale" onclick="openSaleModal('${p.id}')">Record Sale</button>
       <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Edit</button>
       <button class="btn btn-danger" onclick="deletePosition('${p.id}')">Remove</button>
@@ -3117,12 +3248,13 @@ function showToast(msg, type = 'info') {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
-document.getElementById('addModal').addEventListener('click',      function(e) { if (e.target === this) closeModal(); });
-document.getElementById('editModal').addEventListener('click',     function(e) { if (e.target === this) closeEditModal(); });
-document.getElementById('settingsModal').addEventListener('click', function(e) { if (e.target === this) closeSettings(); });
-document.getElementById('disagreeModal').addEventListener('click', function(e) { if (e.target === this) closeDisagreeModal(); });
-document.getElementById('targetModal').addEventListener('click',   function(e) { if (e.target === this) closeTargetModal(); });
-document.getElementById('saleModal').addEventListener('click',     function(e) { if (e.target === this) closeSaleModal(); });
+document.getElementById('addModal').addEventListener('click',        function(e) { if (e.target === this) closeModal(); });
+document.getElementById('editModal').addEventListener('click',       function(e) { if (e.target === this) closeEditModal(); });
+document.getElementById('settingsModal').addEventListener('click',   function(e) { if (e.target === this) closeSettings(); });
+document.getElementById('disagreeModal').addEventListener('click',   function(e) { if (e.target === this) closeDisagreeModal(); });
+document.getElementById('targetModal').addEventListener('click',     function(e) { if (e.target === this) closeTargetModal(); });
+document.getElementById('saleModal').addEventListener('click',       function(e) { if (e.target === this) closeSaleModal(); });
+document.getElementById('addSharesModal').addEventListener('click',  function(e) { if (e.target === this) closeAddSharesModal(); });
 </script>
 </body>
 </html>
